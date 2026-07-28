@@ -1,0 +1,10 @@
+78098b89c88a74ebe8c20117b8754620
+::res://::1785262433
+icon.svg::CompressedTexture2D::4659461774325640948::1785258193::1785258198::1::::<><><>0<>0<>15021400cb5f4c1d33b563ccae643b26<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
+::res://Resources/::1785262645
+Env.tres::Environment::5635208108132646600::1785262645::0::1::::<><><>0<>0<><>::
+::res://Scenes/::1785262655
+gameManager.tscn::PackedScene::7521228751957469517::1785262655::0::1::::<><><>0<>0<><>::uid://bnew8cmgoaaqq::::res://Scripts/GameManager.cs<>uid://cmj0b3xle0yng::::res://Resources/Env.tres
+::res://Scripts/::1785262808
+GameManager.cs::CSharpScript::3308527990919160016::1785262808::0::1::::GameManager<>Node<><>0<>0<><>::
+InputManager.cs::CSharpScript::3443356442387158374::1785262573::0::1::::<><><>0<>0<><>::

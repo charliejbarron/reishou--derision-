@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://dfflskyi070n6"]
+
+[ext_resource type="Script" uid="uid://bnew8cmgoaaqq" path="res://Scripts/GameManager.cs" id="1_sfebq"]
+[ext_resource type="Environment" uid="uid://cmj0b3xle0yng" path="res://Resources/Env.tres" id="2_lbx8d"]
+
+[node name="GameManager" type="Node" unique_id=485376597]
+script = ExtResource("1_sfebq")
+metadata/_custom_type_script = "uid://bnew8cmgoaaqq"
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1318279137]
+environment = ExtResource("2_lbx8d")

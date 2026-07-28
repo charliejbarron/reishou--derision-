@@ -1,0 +1,18 @@
+/home/charlie/reishou-(derision)/.godot/mono/temp/bin/Debug/Reishou (Derision).deps.json
+/home/charlie/reishou-(derision)/.godot/mono/temp/bin/Debug/Reishou (Derision).runtimeconfig.json
+/home/charlie/reishou-(derision)/.godot/mono/temp/bin/Debug/Reishou (Derision).dll
+/home/charlie/reishou-(derision)/.godot/mono/temp/bin/Debug/Reishou (Derision).pdb
+/home/charlie/reishou-(derision)/.godot/mono/temp/bin/Debug/GodotSharp.dll
+/home/charlie/reishou-(derision)/.godot/mono/temp/bin/Debug/GodotSharpEditor.dll
+/home/charlie/reishou-(derision)/.godot/mono/temp/obj/Debug/Reishou (Derision).csproj.AssemblyReference.cache
+/home/charlie/reishou-(derision)/.godot/mono/temp/obj/Debug/Reishou (Derision).GeneratedMSBuildEditorConfig.editorconfig
+/home/charlie/reishou-(derision)/.godot/mono/temp/obj/Debug/Reishou (Derision).AssemblyInfoInputs.cache
+/home/charlie/reishou-(derision)/.godot/mono/temp/obj/Debug/Reishou (Derision).AssemblyInfo.cs
+/home/charlie/reishou-(derision)/.godot/mono/temp/obj/Debug/Reishou (Derision).csproj.CoreCompileInputs.cache
+/home/charlie/reishou-(derision)/.godot/mono/temp/obj/Debug/Reishou .7324352D.Up2Date
+/home/charlie/reishou-(derision)/.godot/mono/temp/obj/Debug/Reishou (Derision).dll
+/home/charlie/reishou-(derision)/.godot/mono/temp/obj/Debug/refint/Reishou (Derision).dll
+/home/charlie/reishou-(derision)/.godot/mono/temp/obj/Debug/Reishou (Derision).pdb
+/home/charlie/reishou-(derision)/.godot/mono/temp/obj/Debug/Reishou (Derision).genruntimeconfig.cache
+/home/charlie/reishou-(derision)/.godot/mono/temp/obj/Debug/ref/Reishou (Derision).dll
+/home/charlie/reishou-(derision)/.godot/mono/temp/bin/Debug/Newtonsoft.Json.dll

@@ -1,0 +1,5 @@
+res://Scripts/GameManager.cs
+res://Scripts/InputManager.cs
+res://Scripts/Settings.cs
+res://Scenes/gameManager.tscn
+res://Resources/Env.tres

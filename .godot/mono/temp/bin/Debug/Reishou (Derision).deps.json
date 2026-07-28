@@ -1,0 +1,76 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Reishou (Derision)/1.0.0": {
+        "dependencies": {
+          "GodotSharp": "4.7.1",
+          "GodotSharpEditor": "4.7.1",
+          "Newtonsoft.Json": "13.0.5-beta1"
+        },
+        "runtime": {
+          "Reishou (Derision).dll": {}
+        }
+      },
+      "GodotSharp/4.7.1": {
+        "runtime": {
+          "lib/net8.0/GodotSharp.dll": {
+            "assemblyVersion": "4.7.1.0",
+            "fileVersion": "4.7.1.0"
+          }
+        }
+      },
+      "GodotSharpEditor/4.7.1": {
+        "dependencies": {
+          "GodotSharp": "4.7.1"
+        },
+        "runtime": {
+          "lib/net8.0/GodotSharpEditor.dll": {
+            "assemblyVersion": "4.7.1.0",
+            "fileVersion": "4.7.1.0"
+          }
+        }
+      },
+      "Newtonsoft.Json/13.0.5-beta1": {
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "13.0.0.0",
+            "fileVersion": "13.0.5.31230"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Reishou (Derision)/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "GodotSharp/4.7.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-OCTPz0MtENY0J1e9Sw4VB9qxS0DK9xpEQLAIMRzCtnVKiJvHZUAAnJ9mU4ewW5+88V4beewp3dl8OE813Qw73g==",
+      "path": "godotsharp/4.7.1",
+      "hashPath": "godotsharp.4.7.1.nupkg.sha512"
+    },
+    "GodotSharpEditor/4.7.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MAX9wPgjX9BM+EOMxuF++mWKdvO2y0ZiEAfv6D68HGseQc8mX//yc7QrJizXSJ4ii1nh3krXZSyIJ77nmjOgYA==",
+      "path": "godotsharpeditor/4.7.1",
+      "hashPath": "godotsharpeditor.4.7.1.nupkg.sha512"
+    },
+    "Newtonsoft.Json/13.0.5-beta1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-cGxikAY78u8CPfIT7mkICvI2ZNL7oDsC+DzgVWxtU5DmNhF2qDcU3YheDitdO9TKIra6Y5rHRD2T7oEexbAbLA==",
+      "path": "newtonsoft.json/13.0.5-beta1",
+      "hashPath": "newtonsoft.json.13.0.5-beta1.nupkg.sha512"
+    }
+  }
+}
