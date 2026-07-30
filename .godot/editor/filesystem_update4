@@ -1,5 +1,14 @@
+res://Scenes/player.tscn
+res://Resources/Env.tres
+res://Scenes/gameManager.tscn
 res://Scripts/GameManager.cs
 res://Scripts/InputManager.cs
-res://Scripts/Settings.cs
-res://Scenes/gameManager.tscn
-res://Resources/Env.tres
+res://Scripts/MovementManager.cs
+res://Scripts/MovementInterpreters/BaseInterpreter.cs
+res://Scripts/MovementInterpreters/MovementInterpreter.cs
+res://Scripts/CameraInterpreters/CameraInterpreter.cs
+res://Scripts/CameraInterpreters/Types/Static.cs
+res://Scripts/CameraInterpreters/Types/FirstPerson.cs
+res://Scenes/camera.tscn
+res://Scenes/gameManager.exr
+res://Scenes/gameManager.lmbake

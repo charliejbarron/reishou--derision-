@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://dvqtd58hbqi1m"]
+
+[ext_resource type="Environment" uid="uid://cmj0b3xle0yng" path="res://Resources/Env.tres" id="1_375tr"]
+
+[node name="Camera3D" type="Camera3D" unique_id=1568685294]
+physics_interpolation_mode = 1
+environment = ExtResource("1_375tr")
+
+[node name="Marker" type="Node3D" parent="." unique_id=1798551235]
+physics_interpolation_mode = 2
+top_level = true

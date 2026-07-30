@@ -137,11 +137,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/charlie/reishou-(derision)/Reishou (Derision).csproj",
+      "projectUniqueName": "/mnt/HHD/Godot/reishou-(derision)/Reishou (Derision).csproj",
       "projectName": "Reishou (Derision)",
-      "projectPath": "/home/charlie/reishou-(derision)/Reishou (Derision).csproj",
+      "projectPath": "/mnt/HHD/Godot/reishou-(derision)/Reishou (Derision).csproj",
       "packagesPath": "/home/charlie/.nuget/packages/",
-      "outputPath": "/home/charlie/reishou-(derision)/.godot/mono/temp/obj/",
+      "outputPath": "/mnt/HHD/Godot/reishou-(derision)/.godot/mono/temp/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/charlie/.nuget/NuGet/NuGet.Config"

@@ -1,2 +1,14 @@
+Node3D
+CSGBox3D
 Camera3D
+CollisionShape3D
+CharacterBody3D
+MovementManager
+InputManager
+Node
+OmniLight3D
+AreaLight3D
+DirectionalLight3D
+LightmapGI
+CSGCombiner3D
 GameManager

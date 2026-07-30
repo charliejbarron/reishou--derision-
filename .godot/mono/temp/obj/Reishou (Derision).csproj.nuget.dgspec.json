@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/charlie/reishou-(derision)/Reishou (Derision).csproj": {}
+    "/mnt/HHD/Godot/reishou-(derision)/Reishou (Derision).csproj": {}
   },
   "projects": {
-    "/home/charlie/reishou-(derision)/Reishou (Derision).csproj": {
+    "/mnt/HHD/Godot/reishou-(derision)/Reishou (Derision).csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/charlie/reishou-(derision)/Reishou (Derision).csproj",
+        "projectUniqueName": "/mnt/HHD/Godot/reishou-(derision)/Reishou (Derision).csproj",
         "projectName": "Reishou (Derision)",
-        "projectPath": "/home/charlie/reishou-(derision)/Reishou (Derision).csproj",
+        "projectPath": "/mnt/HHD/Godot/reishou-(derision)/Reishou (Derision).csproj",
         "packagesPath": "/home/charlie/.nuget/packages/",
-        "outputPath": "/home/charlie/reishou-(derision)/.godot/mono/temp/obj/",
+        "outputPath": "/mnt/HHD/Godot/reishou-(derision)/.godot/mono/temp/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/charlie/.nuget/NuGet/NuGet.Config"
@@ -24,7 +24,6 @@
         },
         "frameworks": {
           "net8.0": {
-            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {}
           }
@@ -43,7 +42,6 @@
       },
       "frameworks": {
         "net8.0": {
-          "framework": "net8.0",
           "targetAlias": "net8.0",
           "dependencies": {
             "Godot.SourceGenerators": {

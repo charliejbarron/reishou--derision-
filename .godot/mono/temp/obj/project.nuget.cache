@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "4q3d5B//LVY=",
+  "dgSpecHash": "gmUDHc7mfxQ=",
   "success": true,
-  "projectFilePath": "/home/charlie/reishou-(derision)/Reishou (Derision).csproj",
+  "projectFilePath": "/mnt/HHD/Godot/reishou-(derision)/Reishou (Derision).csproj",
   "expectedPackageFiles": [
     "/home/charlie/.nuget/packages/godot.sourcegenerators/4.7.1/godot.sourcegenerators.4.7.1.nupkg.sha512",
     "/home/charlie/.nuget/packages/godotsharp/4.7.1/godotsharp.4.7.1.nupkg.sha512",
