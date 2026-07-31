@@ -3,18 +3,18 @@ using Godot;
 [GlobalClass]
 public partial class InputManager : Node
 {
-    GameInput _lastInput;
+    PlayerInput _lastInput;
 
     Vector2 _mouseInput;
 
     float _sprintTimer;
 
-    public static readonly float DashPadding = 0.75f;
+    public static readonly float DashCooldown = 0.75f;
     bool _scheduleDash;
-
-    public GameInput CollectInputs(float delta)
+    
+    public PlayerInput CollectInputs(float delta)
     {
-        GameInput gameInput = new()
+        PlayerInput playerInput = new()
         {
             NavigationInputs = new()
             {
@@ -23,11 +23,11 @@ public partial class InputManager : Node
             }
         };
 
-        _lastInput = gameInput;
-        return gameInput;
+        _lastInput = playerInput;
+        return playerInput;
     }
-
-    MovementInput CollectMovement(MovementInput movementInput, float delta)
+    
+    PlayerInput.MovementInput CollectMovement(PlayerInput.MovementInput movementInput, float delta)
     {
         Vector2 MovementInput()
         {
@@ -39,9 +39,14 @@ public partial class InputManager : Node
             return movement;
         }
 
-        bool JumpInput(bool hold)
+        int JumpInput()
         {
-            return hold ? Input.IsActionJustPressed("Jump") : Input.IsActionPressed("Jump");
+            if (Input.IsActionJustPressed("Jump"))
+                return 2;
+            if (Input.IsActionPressed("Jump"))
+                return 1;
+
+            return 0;
         }
 
         float DashInput()
@@ -49,7 +54,7 @@ public partial class InputManager : Node
             bool input = Input.IsActionJustPressed("Dash");
 
             if (movementInput.Dash <= 0f)
-                return input || _scheduleDash ? DashPadding : 0f;
+                return input || _scheduleDash ? DashCooldown : 0f;
 
             _scheduleDash = (_scheduleDash || input) && movementInput.Dash < 0.3f;
             return movementInput.Dash - delta;
@@ -60,19 +65,19 @@ public partial class InputManager : Node
             bool input = Input.IsActionPressed("Dash") || Input.IsActionPressed("Sprint");
             bool held = movementInput.Sprint > 1e-08 && movementInput.Movement != Vector2.Zero && toggle;
 
-            bool dashing = (input || held) && movementInput.Movement != Vector2.Zero;
+            bool sprinting = (input || held) && movementInput.Movement != Vector2.Zero;
 
-            _sprintTimer = dashing ? padding : Mathf.Max(_sprintTimer - delta, 0f);
+            _sprintTimer = sprinting ? padding : Mathf.Max(_sprintTimer - delta, 0f);
 
-            return _sprintTimer > 1e-08 ? Mathf.Min(movementInput.Sprint + delta, movementInput.Dash > DashPadding - 1e-08 ? 1.5f : 3f) : 0f;
+            return _sprintTimer > 1e-08 ? Mathf.Min(movementInput.Sprint + delta, movementInput.Dash > DashCooldown - 1e-08 ? 1.5f : 3f) : 0f;
         }
 
-        MovementInput movementInputs = new()
+        PlayerInput.MovementInput movementInputs = new()
         {
             Movement = MovementInput(),
-            Jumped = JumpInput(PlayerSettings.PlayerInputSetting.HoldJump),
+            Jump = JumpInput(),
             Dash = DashInput(),
-            Sprint = SprintInput(PlayerSettings.PlayerInputSetting.ToggleSprint, PlayerSettings.PlayerInputSetting.SprintPadding),
+            Sprint = SprintInput(PlayerSettings.PlayerInputSetting.ToggleSprint, PlayerSettings.PlayerInputSetting.SprintPadding)
         };
 
         return movementInputs;
@@ -111,26 +116,26 @@ public partial class InputManager : Node
     }
 }
 
-public record struct GameInput
+public struct PlayerInput
 {
     public NavigationInput NavigationInputs;
     public CombatInput CombatInputs;
-}
+    
+    public struct NavigationInput
+    {
+        public MovementInput MovementInputs;
+        public Vector2 CameraInputs;
+    }
 
-public struct NavigationInput
-{
-    public MovementInput MovementInputs;
-    public Vector2 CameraInputs;
-}
+    public struct MovementInput
+    {
+        public Vector2 Movement;
+        public int Jump;
+        public float Dash;
+        public float Sprint;
+    }
 
-public struct MovementInput
-{
-    public Vector2 Movement;
-    public bool Jumped;
-    public float Dash;
-    public float Sprint;
-}
-
-public struct CombatInput
-{
+    public struct CombatInput
+    {
+    }
 }

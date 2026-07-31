@@ -5,8 +5,10 @@ using Newtonsoft.Json;
 [GlobalClass]
 public partial class GameManager : Node
 {
+    public static float Delta;
+    
     InputManager _inputManager;
-    MovementManager _movementManager;
+    LevelNavigationManager _levelNavigationManager;
     
     readonly string _playerScene = "";
 
@@ -15,7 +17,7 @@ public partial class GameManager : Node
     public override void _Ready()
     {
         _inputManager = GetNode<InputManager>("InputManager");
-        _movementManager = GetNode<MovementManager>("MovementManager");
+        _levelNavigationManager = GetNode<LevelNavigationManager>("LevelNavigationManager");
 
         // _testinggg = new()
         // {
@@ -78,11 +80,13 @@ public partial class GameManager : Node
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _PhysicsProcess(double delta)
     {
-        GameInput gameInput = _inputManager.CollectInputs((float)delta);
-        string inputJson = JsonConvert.SerializeObject(gameInput, Formatting.Indented);
-        GD.Print(inputJson);
+        PlayerInput playerInput = _inputManager.CollectInputs((float)delta);
+        string inputJson = JsonConvert.SerializeObject(playerInput, Formatting.Indented);
+        // GD.Print(inputJson);
+
+        Delta = (float)delta;
         
-        _movementManager.HandleNavigation(gameInput.NavigationInputs);
+        _levelNavigationManager.HandleNavigation(playerInput.NavigationInputs);
     }
 }
 
