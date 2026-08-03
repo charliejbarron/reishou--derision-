@@ -1,9 +1,10 @@
+RayCast3D
+ShapeCast3D
 Node3D
 CSGBox3D
 Camera3D
 CollisionShape3D
 CharacterBody3D
-MovementManager
 InputManager
 Node
 OmniLight3D

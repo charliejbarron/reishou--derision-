@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "mJug1/bKDwc=",
+  "dgSpecHash": "byDRyGWneMQ=",
   "success": true,
   "projectFilePath": "/mnt/HHD/Godot/reishou-(derision)/Reishou (Derision).csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,7 @@
     "/home/charlie/.nuget/packages/godotsharp/4.7.1/godotsharp.4.7.1.nupkg.sha512",
     "/home/charlie/.nuget/packages/godotsharpeditor/4.7.1/godotsharpeditor.4.7.1.nupkg.sha512",
     "/home/charlie/.nuget/packages/newtonsoft.json/13.0.5-beta1/newtonsoft.json.13.0.5-beta1.nupkg.sha512",
+    "/home/charlie/.nuget/packages/microsoft.netcore.app.ref/8.0.29/microsoft.netcore.app.ref.8.0.29.nupkg.sha512",
     "/home/charlie/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.29/microsoft.aspnetcore.app.ref.8.0.29.nupkg.sha512"
   ],
   "logs": []

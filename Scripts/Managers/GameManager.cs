@@ -81,7 +81,7 @@ public partial class GameManager : Node
     public override void _PhysicsProcess(double delta)
     {
         PlayerInput playerInput = _inputManager.CollectInputs((float)delta);
-        string inputJson = JsonConvert.SerializeObject(playerInput, Formatting.Indented);
+        // string inputJson = JsonConvert.SerializeObject(playerInput, Formatting.Indented);
         // GD.Print(inputJson);
 
         Delta = (float)delta;

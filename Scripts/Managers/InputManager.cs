@@ -6,10 +6,7 @@ public partial class InputManager : Node
     PlayerInput _lastInput;
 
     Vector2 _mouseInput;
-
     float _sprintTimer;
-
-    public static readonly float DashCooldown = 0.75f;
     bool _scheduleDash;
     
     public PlayerInput CollectInputs(float delta)
@@ -19,7 +16,7 @@ public partial class InputManager : Node
             NavigationInputs = new()
             {
                 MovementInputs = CollectMovement(_lastInput.NavigationInputs.MovementInputs, delta),
-                CameraInputs = CameraInput(PlayerSettings.PlayerInputSetting.MouseSensitivity, PlayerSettings.PlayerInputSetting.ControllerSensitivity)
+                CameraInputs = CameraInput(PlayerSettings.PlayerInput.MouseSensitivity, PlayerSettings.PlayerInput.ControllerSensitivity)
             }
         };
 
@@ -49,27 +46,29 @@ public partial class InputManager : Node
             return 0;
         }
 
-        float DashInput()
+        bool DashInput()
         {
             bool input = Input.IsActionJustPressed("Dash");
 
-            if (movementInput.Dash <= 0f)
-                return input || _scheduleDash ? DashCooldown : 0f;
-
-            _scheduleDash = (_scheduleDash || input) && movementInput.Dash < 0.3f;
-            return movementInput.Dash - delta;
+            // if (movementInput.Dash <= 0f)
+            //     return input || _scheduleDash ? DashCooldown : 0f;
+            //
+            // _scheduleDash = (_scheduleDash || input) && movementInput.Dash < 0.3f;
+            // return movementInput.Dash - delta;
+            return input;
         }
 
-        float SprintInput(bool toggle, float padding)
+        bool SprintInput()
         {
-            bool input = Input.IsActionPressed("Dash") || Input.IsActionPressed("Sprint");
-            bool held = movementInput.Sprint > 1e-08 && movementInput.Movement != Vector2.Zero && toggle;
-
-            bool sprinting = (input || held) && movementInput.Movement != Vector2.Zero;
-
-            _sprintTimer = sprinting ? padding : Mathf.Max(_sprintTimer - delta, 0f);
-
-            return _sprintTimer > 1e-08 ? Mathf.Min(movementInput.Sprint + delta, movementInput.Dash > DashCooldown - 1e-08 ? 1.5f : 3f) : 0f;
+            // bool input = Input.IsActionPressed("Dash") || Input.IsActionPressed("Sprint");
+            // bool held = movementInput.Sprint > 1e-08 && movementInput.Movement != Vector2.Zero && PlayerSettings.PlayerInputSetting.ToggleSprint;
+            //
+            // bool sprinting = (input || held) && movementInput.Movement != Vector2.Zero;
+            //
+            // _sprintTimer = sprinting ? PlayerSettings.PlayerInputSetting.SprintPadding : _sprintTimer - delta;
+            //
+            // return _sprintTimer >= 0 ? Mathf.Min(movementInput.Sprint + delta, movementInput.Dash > DashCooldown - 1e-08 ? 1.5f : 3f) : 0f;
+            return Input.IsActionPressed("Dash") || Input.IsActionPressed("Sprint");
         }
 
         PlayerInput.MovementInput movementInputs = new()
@@ -77,7 +76,7 @@ public partial class InputManager : Node
             Movement = MovementInput(),
             Jump = JumpInput(),
             Dash = DashInput(),
-            Sprint = SprintInput(PlayerSettings.PlayerInputSetting.ToggleSprint, PlayerSettings.PlayerInputSetting.SprintPadding)
+            Sprint = SprintInput()
         };
 
         return movementInputs;
@@ -131,8 +130,8 @@ public struct PlayerInput
     {
         public Vector2 Movement;
         public int Jump;
-        public float Dash;
-        public float Sprint;
+        public bool Dash;
+        public bool Sprint;
     }
 
     public struct CombatInput

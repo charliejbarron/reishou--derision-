@@ -82,6 +82,10 @@
             {
               "name": "Microsoft.AspNetCore.App.Ref",
               "version": "[8.0.29, 8.0.29]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.29, 8.0.29]"
             }
           ],
           "frameworkReferences": {
