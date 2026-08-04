@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Reishou (Derision)")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+67da6545a1f2b1e83c0b039f58f8b32548ef8723")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ef515fb1c5d2b40a3a835a4c8cccaee5c739625d")]
 [assembly: System.Reflection.AssemblyProductAttribute("Reishou (Derision)")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Reishou (Derision)")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

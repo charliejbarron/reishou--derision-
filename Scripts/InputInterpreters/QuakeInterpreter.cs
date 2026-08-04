@@ -3,39 +3,40 @@ using Godot;
 [GlobalClass]
 public partial class QuakeInterpreter : InputInterpreter
 {
-    public override void HandleNavigationInputs(PlayerInput.NavigationInput navigationInput, Player player, SharedVariables variables)
+    public override void HandleNavigationInputs(PlayerInput.NavigationInput navigationInput, Player player)
     {
         bool floored = player.CharacterBody.IsOnFloor();
-        SharedFunctions.HandleJumpVars(variables.JumpVars, floored, navigationInput.MovementInputs.Jump);
+        SharedFunctions.HandleJumpVars(floored, navigationInput.MovementInputs.Jump);
 
         Vector3 HandleMovement(PlayerInput.MovementInput movementInput, CharacterBody3D body, Basis forward)
         {
-            float moveSpeed = SharedFunctions.GetSprint(variables.SprintVars, movementInput.Movement, movementInput.Sprint) > 0f && floored ? GameSettings.MaxSprintSpeed : GameSettings.MaxWalkSpeed;
+            float moveSpeed = SharedFunctions.GetSprint(movementInput.Movement, movementInput.Sprint) > 0f && floored ? GameSettings.MaxSprintSpeed : GameSettings.MaxWalkSpeed;
             var velocities = SharedFunctions.CalculateInput(movementInput.Movement, forward, body.Velocity, floored);
-            
+
             body.Position += SharedFunctions.HandleSteps(player, velocities.inputVelocity);
-            
-            Vector3 dash = SharedFunctions.Dash(variables.DashVars, movementInput.Dash, floored, movementInput.Movement, player.CharacterBody.IsOnWall()) * forward;
+
+            Vector3 dash = SharedFunctions.Dash(movementInput.Dash, floored, movementInput.Movement, player.CharacterBody.IsOnWall()) * forward;
+            bool canJump = SharedFunctions.CanJump(navigationInput.MovementInputs.Jump, floored, dash != Vector3.Zero);
+
             if (dash != Vector3.Zero)
                 return dash + new Vector3(0, SharedFunctions.Gravity(), 0);
 
             float friction = SharedFunctions.CalculateFriction(floored, velocities.newVelocity, moveSpeed, movementInput.Movement.Length(), player.CharacterBody.IsOnWall());
             float speed = SharedFunctions.CalculateSpeed(velocities.oldVelocity.Length(), moveSpeed, velocities.newVelocity.Length(), friction);
-            
+
             Vector3 finalVelocity = SharedFunctions.MovementVelocity(velocities.newVelocity, speed, body.Velocity.Y + SharedFunctions.Gravity());
 
-            bool canJump = SharedFunctions.CanJump(navigationInput.MovementInputs.Jump, variables.JumpVars, floored, true);
             if (canJump)
-                finalVelocity = SharedFunctions.Jump(variables.JumpVars, finalVelocity, velocities.inputVelocity);
-            
+                finalVelocity = SharedFunctions.Jump(finalVelocity, velocities.inputVelocity);
+
             return finalVelocity;
         }
 
         void HandleCamera(Vector2 cameraInput, Node3D camera, Vector3 bodyPosition, float xInput)
         {
             camera.GlobalPosition = bodyPosition + new Vector3(0, GameSettings.CameraOffset, 0);
-            
-            float roll = float.Lerp(camera.RotationDegrees.Z, -PlayerSettings.PlayerInput.HorizontalCameraTiltFp * xInput, 
+
+            float roll = float.Lerp(camera.RotationDegrees.Z, -PlayerSettings.PlayerInput.HorizontalCameraTiltFp * xInput,
                 GameManager.Delta * PlayerSettings.PlayerInput.HorizontalCameraTiltSpeedFp);
 
             cameraInput *= PlayerSettings.PlayerInput.SensitivityReductionFp;

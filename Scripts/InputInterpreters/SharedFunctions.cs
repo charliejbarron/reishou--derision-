@@ -2,17 +2,6 @@ using Godot;
 
 internal static class SharedFunctions
 {
-    internal static bool CanJump(int jump, SharedVariables.JumpVariables jumpVars, bool floored, bool dbJump)
-    {
-        bool nearFloor = jumpVars.AirTiming > 0f || floored;
-        bool jumpInput = jump >= (PlayerSettings.PlayerInput.HoldJump ? 1 : 2);
-
-        if (dbJump && !nearFloor && !jumpVars.DoubleJump && jumpInput)
-            jumpVars.DoubleJump = nearFloor = true;
-
-        return (jumpInput || jumpVars.JumpTiming >= 0) && nearFloor;
-    }
-
     internal static Vector3 HandleSteps(Player player, Vector3 input)
     {
         if (input == Vector3.Zero || !player.CharacterBody.IsOnFloor() || !player.CharacterBody.IsOnWall() || player.CharacterBody.Velocity.Y > 0f)
@@ -32,66 +21,92 @@ internal static class SharedFunctions
         return point;
     }
 
-    internal static Vector3 Dash(SharedVariables.DashVariables dashVars, bool dash, bool floored, Vector2 moveInput, bool isOnWall)
+    internal static Vector3 Dash(bool dash, bool floored, Vector2 moveInput, bool isOnWall)
     {
-        if (floored != dashVars.TouchedFloor)
-            dashVars.DashCooldown = 0;
+        if (floored != SharedVariables.DashVars.TouchedFloor)
+            SharedVariables.DashVars.DashCooldown = 0;
 
         if (floored)
-            dashVars.TouchedFloor = true;
+            SharedVariables.DashVars.TouchedFloor = true;
 
-        if (dashVars.DashTimer > GameSettings.DashFalloff)
+        SharedVariables.DashVars.DashTimer -= GameManager.Delta * (isOnWall ? GameSettings.DashWallLoss : 1);
+
+        if (SharedVariables.DashVars.DashTimer > GameSettings.DashFalloff)
         {
-            dashVars.DashTimer -= GameManager.Delta * (isOnWall ? GameSettings.DashWallLoss : 1);
-            return dashVars.DashDir * GameSettings.DashForce * dashVars.DashTimer;
+            return SharedVariables.DashVars.DashDir * GameSettings.DashForce * SharedVariables.DashVars.DashTimer;
         }
 
-        dashVars.DashCooldown -= GameManager.Delta;
-        dashVars.ScheduleDash -= GameManager.Delta;
+        SharedVariables.DashVars.DashCooldown -= GameManager.Delta;
+        SharedVariables.DashVars.ScheduleDash -= GameManager.Delta;
 
         if (dash)
-            dashVars.ScheduleDash = GameSettings.DashPadding;
+            SharedVariables.DashVars.ScheduleDash = GameSettings.DashPadding;
 
-        if (dashVars.ScheduleDash < 0f || dashVars.DashCooldown > 0f || !dashVars.TouchedFloor)
+        if (SharedVariables.DashVars.ScheduleDash < 0f || SharedVariables.DashVars.DashCooldown > 0f || !SharedVariables.DashVars.TouchedFloor)
             return Vector3.Zero;
 
-        dashVars.ScheduleDash = 0f;
-        dashVars.TouchedFloor = floored;
-        dashVars.DashCooldown = GameSettings.DashCooldown;
-        dashVars.DashTimer = GameSettings.DashTime + GameSettings.DashFalloff;
-        dashVars.DashDir = moveInput == Vector2.Zero ? new Vector3(0, 0, -1) : new Vector3(moveInput.X, 0, -moveInput.Y).Normalized();
-        return dashVars.DashDir * GameSettings.DashForce * GameManager.Delta * dashVars.DashCooldown;
+        SharedVariables.DashVars.ScheduleDash = 0f;
+        SharedVariables.DashVars.TouchedFloor = floored;
+        SharedVariables.DashVars.DashCooldown = GameSettings.DashCooldown;
+        SharedVariables.DashVars.DashTimer = GameSettings.DashTime + GameSettings.DashFalloff;
+        SharedVariables.DashVars.DashDir = moveInput == Vector2.Zero ? new Vector3(0, 0, -1) : new Vector3(moveInput.X, 0, -moveInput.Y).Normalized();
+        return SharedVariables.DashVars.DashDir * GameSettings.DashForce * GameManager.Delta * SharedVariables.DashVars.DashCooldown;
     }
 
-    internal static float GetSprint(SharedVariables.SprintVariables sprintVars, Vector2 moveInput, bool sprintInput)
+    internal static float GetSprint(Vector2 moveInput, bool sprintInput)
     {
         if (sprintInput)
         {
-            sprintVars.PaddingTime = PlayerSettings.PlayerInput.SprintPadding;
-            sprintVars.SprintTime = Mathf.Min(sprintVars.SprintTime + GameManager.Delta, 3f);
-            return sprintVars.SprintTime;
+            SharedVariables.SprintVars.PaddingTime = PlayerSettings.PlayerInput.SprintPadding;
+            SharedVariables.SprintVars.SprintTime = Mathf.Min(SharedVariables.SprintVars.SprintTime + GameManager.Delta, 3f);
+            return SharedVariables.SprintVars.SprintTime;
         }
 
         if (!PlayerSettings.PlayerInput.ToggleSprint)
         {
-            sprintVars.SprintTime = 0f;
+            SharedVariables.SprintVars.SprintTime = 0f;
             return 0f;
         }
 
-        if (moveInput.Length() >= GameSettings.SprintDeadzone && sprintVars.PaddingTime > 0)
+        if (moveInput.Length() >= GameSettings.SprintDeadzone && SharedVariables.SprintVars.PaddingTime > 0)
         {
-            sprintVars.PaddingTime = PlayerSettings.PlayerInput.SprintPadding;
+            SharedVariables.SprintVars.PaddingTime = PlayerSettings.PlayerInput.SprintPadding;
         }
 
-        sprintVars.SprintTime = sprintVars.PaddingTime <= 0f ? 0f : Mathf.Min(sprintVars.SprintTime + GameManager.Delta, 3f);
-        sprintVars.PaddingTime -= GameManager.Delta;
+        SharedVariables.SprintVars.SprintTime = SharedVariables.SprintVars.PaddingTime <= 0f ? 0f : Mathf.Min(SharedVariables.SprintVars.SprintTime + GameManager.Delta, 3f);
+        SharedVariables.SprintVars.PaddingTime -= GameManager.Delta;
 
-        return sprintVars.SprintTime;
+        return SharedVariables.SprintVars.SprintTime;
     }
 
-    internal static Vector3 Jump(SharedVariables.JumpVariables jumpVars, Vector3 finalVelocity, Vector3 inputVelocity)
+    internal static bool CanJump(int jump, bool floored, bool dash = false, bool dbJump = true)
     {
-        jumpVars.JumpTiming = jumpVars.AirTiming = -1f;
+        bool nearFloor = SharedVariables.JumpVars.AirTiming > 0f || floored;
+        bool jumpInput = jump >= (PlayerSettings.PlayerInput.HoldJump ? 1 : 2);
+
+        if (dash)
+        {
+            if (jumpInput)
+                SharedVariables.JumpVars.ScheduleJump = true;
+            
+            return false;
+        }
+
+        if (SharedVariables.JumpVars.ScheduleJump)
+        {
+            SharedVariables.JumpVars.ScheduleJump = false;
+            jumpInput = true;
+        }
+        
+        if (dbJump && !nearFloor && !SharedVariables.JumpVars.DoubleJump && jumpInput)
+            SharedVariables.JumpVars.DoubleJump = nearFloor = true;
+
+        return (jumpInput || SharedVariables.JumpVars.JumpTiming >= 0) && nearFloor;
+    }
+
+    internal static Vector3 Jump(Vector3 finalVelocity, Vector3 inputVelocity)
+    {
+        SharedVariables.JumpVars.JumpTiming = SharedVariables.JumpVars.AirTiming = -1f;
 
         Vector3 dir = finalVelocity.Lerp(inputVelocity, 0.75f).Normalized();
         Vector3 newVelocity = dir * (finalVelocity * new Vector3(1, 0, 1)).Length();
@@ -101,13 +116,13 @@ internal static class SharedFunctions
         return newVelocity;
     }
 
-    internal static void HandleJumpVars(SharedVariables.JumpVariables variables, bool floored, int jump)
+    internal static void HandleJumpVars(bool floored, int jump)
     {
         if (floored)
-            variables.DoubleJump = false;
+            SharedVariables.JumpVars.DoubleJump = false;
 
-        variables.AirTiming = floored ? 0.2f : variables.AirTiming - GameManager.Delta;
-        variables.JumpTiming = jump >= (PlayerSettings.PlayerInput.HoldJump ? 1 : 2) ? 0.15f : variables.JumpTiming - GameManager.Delta;
+        SharedVariables.JumpVars.AirTiming = floored ? 0.2f : SharedVariables.JumpVars.AirTiming - GameManager.Delta;
+        SharedVariables.JumpVars.JumpTiming = jump >= (PlayerSettings.PlayerInput.HoldJump ? 1 : 2) ? 0.15f : SharedVariables.JumpVars.JumpTiming - GameManager.Delta;
     }
 
     internal static float CalculateFriction(bool floored, Vector3 newVelocity, float targetSpeed, float input, bool isOnWall)
@@ -143,5 +158,35 @@ internal static class SharedFunctions
         Vector3 inputVelocity = velocity + movementDir * (floored ? GameSettings.Control * (velocity.Length() * 0.2f + 1) : GameSettings.Control);
 
         return (movementDir, velocity, inputVelocity);
+    }
+}
+
+static class SharedVariables
+{
+    public static JumpVariables JumpVars = new();
+    public static SprintVariables SprintVars = new();
+    public static DashVariables DashVars = new();
+
+    public class JumpVariables
+    {
+        internal float AirTiming;
+        internal float JumpTiming;
+        internal bool DoubleJump;
+        internal bool ScheduleJump;
+    }
+
+    public class SprintVariables
+    {
+        internal float SprintTime;
+        internal float PaddingTime;
+    }
+
+    public class DashVariables
+    {
+        internal float DashCooldown;
+        internal float DashTimer;
+        internal Vector3 DashDir;
+        internal float ScheduleDash;
+        internal bool TouchedFloor;
     }
 }

@@ -8,7 +8,6 @@ public partial class LevelNavigationManager : Node
 
     // Level
     InputInterpreter _currentInterpreter;
-    SharedVariables _interpreterVariables;
 
     // MovementInterpreter _movementInterpreter;
     // CameraInterpreter _cameraInterpreter;
@@ -21,8 +20,6 @@ public partial class LevelNavigationManager : Node
 
     void Startup()
     {
-        _interpreterVariables = new();
-
         _player = new()
         {
             CharacterBody = ResourceLoader.Load<PackedScene>("res://Scenes/player.tscn").Instantiate() as CharacterBody3D,
@@ -43,7 +40,7 @@ public partial class LevelNavigationManager : Node
 
     public void HandleNavigation(PlayerInput.NavigationInput navigationInputs)
     {
-        _currentInterpreter.HandleNavigationInputs(navigationInputs, _player, _interpreterVariables);
+        _currentInterpreter.HandleNavigationInputs(navigationInputs, _player);
     }
 }
 
@@ -52,33 +49,4 @@ public class Player
     public CharacterBody3D CharacterBody;
     public RayCast3D CharacterStepCast;
     public Camera3D Camera;
-}
-
-public class SharedVariables
-{
-    public JumpVariables JumpVars = new();
-    public SprintVariables SprintVars = new();
-    public DashVariables DashVars = new();
-
-    public class JumpVariables
-    {
-        internal float AirTiming;
-        internal float JumpTiming;
-        internal bool DoubleJump;
-    }
-
-    public class SprintVariables
-    {
-        internal float SprintTime;
-        internal float PaddingTime;
-    }
-
-    public class DashVariables
-    {
-        internal float DashCooldown;
-        internal float DashTimer;
-        internal Vector3 DashDir;
-        internal float ScheduleDash;
-        internal bool TouchedFloor;
-    }
 }
