@@ -32,25 +32,25 @@ public partial class LevelNavigationManager : Node
         AddChild(_player.CharacterBody);
         AddChild(_player.Camera);
 
-        _player.CharacterStepUpCast = _player.CharacterBody?.GetNode<ShapeCast3D>("StepUpCast");
+        _player.CharacterStepCast = _player.CharacterBody?.GetNode<RayCast3D>("StepCast");
 
-        if (_player.CharacterStepUpCast == null)
+        if (_player.CharacterStepCast == null)
             return;
 
-        _player.CharacterStepUpCast.GlobalPosition = new Vector3(0, GameSettings.StepUpHeight, 0);
-        _player.CharacterStepUpCast.TargetPosition = new Vector3(0, -GameSettings.StepUpHeight + 0.05f, 0);
+        _player.CharacterStepCast.Position = new Vector3(0, GameSettings.CameraOffset, 0);
+        _player.CharacterStepCast.TargetPosition = new Vector3(0, -GameSettings.CameraOffset + 1e-08f, 0);
     }
 
     public void HandleNavigation(PlayerInput.NavigationInput navigationInputs)
     {
-       _currentInterpreter.HandleNavigationInputs(navigationInputs, _player, _interpreterVariables);
+        _currentInterpreter.HandleNavigationInputs(navigationInputs, _player, _interpreterVariables);
     }
 }
 
 public class Player
 {
     public CharacterBody3D CharacterBody;
-    public ShapeCast3D CharacterStepUpCast;
+    public RayCast3D CharacterStepCast;
     public Camera3D Camera;
 }
 
@@ -76,9 +76,9 @@ public class SharedVariables
     public class DashVariables
     {
         internal float DashCooldown;
-        internal bool StartCooldown;
         internal float DashTimer;
         internal Vector3 DashDir;
-        internal bool ScheduleDash;
+        internal float ScheduleDash;
+        internal bool TouchedFloor;
     }
 }

@@ -6,30 +6,27 @@ public partial class QuakeInterpreter : InputInterpreter
     public override void HandleNavigationInputs(PlayerInput.NavigationInput navigationInput, Player player, SharedVariables variables)
     {
         bool floored = player.CharacterBody.IsOnFloor();
-        HandleJumpVars(variables.JumpVars, floored, navigationInput.MovementInputs.Jump);
+        SharedFunctions.HandleJumpVars(variables.JumpVars, floored, navigationInput.MovementInputs.Jump);
 
         Vector3 HandleMovement(PlayerInput.MovementInput movementInput, CharacterBody3D body, Basis forward)
         {
+            float moveSpeed = SharedFunctions.GetSprint(variables.SprintVars, movementInput.Movement, movementInput.Sprint) > 0f && floored ? GameSettings.MaxSprintSpeed : GameSettings.MaxWalkSpeed;
+            var velocities = SharedFunctions.CalculateInput(movementInput.Movement, forward, body.Velocity, floored);
             
-            float moveSpeed = movementInput.Sprint && floored ? GameSettings.MaxSprintSpeed : GameSettings.MaxWalkSpeed;
-            var velocities = CalculateInput(movementInput.Movement, forward, body.Velocity, floored);
+            body.Position += SharedFunctions.HandleSteps(player, velocities.inputVelocity);
             
-            Vector3 dash = Dash(variables.DashVars, movementInput.Dash, floored, movementInput.Movement) * forward;
-            
+            Vector3 dash = SharedFunctions.Dash(variables.DashVars, movementInput.Dash, floored, movementInput.Movement, player.CharacterBody.IsOnWall()) * forward;
             if (dash != Vector3.Zero)
-            {
-                return dash + new Vector3(0, Gravity(), 0);
-            }
+                return dash + new Vector3(0, SharedFunctions.Gravity(), 0);
 
-            float friction = CalculateFriction(floored, velocities.newVelocity, moveSpeed, movementInput.Movement.Length());
-            float speed = CalculateSpeed(velocities.oldVelocity.Length(), moveSpeed, velocities.newVelocity.Length(), friction);
+            float friction = SharedFunctions.CalculateFriction(floored, velocities.newVelocity, moveSpeed, movementInput.Movement.Length(), player.CharacterBody.IsOnWall());
+            float speed = SharedFunctions.CalculateSpeed(velocities.oldVelocity.Length(), moveSpeed, velocities.newVelocity.Length(), friction);
             
-            Vector3 finalVelocity = MovementVelocity(velocities.newVelocity, speed, body.Velocity.Y + Gravity());
+            Vector3 finalVelocity = SharedFunctions.MovementVelocity(velocities.newVelocity, speed, body.Velocity.Y + SharedFunctions.Gravity());
 
-            bool canJump = CanJump(navigationInput.MovementInputs.Jump, variables.JumpVars, floored, true);
-            finalVelocity = canJump ? Jump(variables.JumpVars, finalVelocity, velocities.inputVelocity) : finalVelocity;
-
-            body.Position += HandleSteps(player, velocities.inputVelocity);
+            bool canJump = SharedFunctions.CanJump(navigationInput.MovementInputs.Jump, variables.JumpVars, floored, true);
+            if (canJump)
+                finalVelocity = SharedFunctions.Jump(variables.JumpVars, finalVelocity, velocities.inputVelocity);
             
             return finalVelocity;
         }
@@ -37,8 +34,8 @@ public partial class QuakeInterpreter : InputInterpreter
         void HandleCamera(Vector2 cameraInput, Node3D camera, Vector3 bodyPosition, float xInput)
         {
             camera.GlobalPosition = bodyPosition + new Vector3(0, GameSettings.CameraOffset, 0);
-
-            float roll = float.Lerp(camera.RotationDegrees.Z, -PlayerSettings.PlayerInput.HorizontalCameraTiltFp * xInput,
+            
+            float roll = float.Lerp(camera.RotationDegrees.Z, -PlayerSettings.PlayerInput.HorizontalCameraTiltFp * xInput, 
                 GameManager.Delta * PlayerSettings.PlayerInput.HorizontalCameraTiltSpeedFp);
 
             cameraInput *= PlayerSettings.PlayerInput.SensitivityReductionFp;

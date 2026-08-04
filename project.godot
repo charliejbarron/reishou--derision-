@@ -118,3 +118,4 @@ common/physics_interpolation=true
 
 rendering_device/driver.windows="d3d12"
 anti_aliasing/quality/screen_space_aa=2
+environment/defaults/default_environment="uid://cmj0b3xle0yng"

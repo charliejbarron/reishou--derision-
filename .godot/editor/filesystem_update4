@@ -1,5 +1,5 @@
-res://Scenes/player.tscn
 res://Resources/Env.tres
+res://Scenes/gameManager.tscn
 res://Scripts/Managers/LevelNavigationManager.cs
 res://Scripts/Managers/InputManager.cs
 res://Scripts/Managers/GameManager.cs
@@ -8,4 +8,4 @@ res://Scripts/Old/MovementInterpreters/MovementInterpreter.cs
 res://Scripts/Old/CameraInterpreters/CameraInterpreter.cs
 res://Scripts/Old/CameraInterpreters/Types/FirstPerson.cs
 res://Scripts/InputInterpreters/InputInterpreter.cs
-res://Scenes/gameManager.tscn
+res://Scripts/InputInterpreters/SharedFunctions.cs

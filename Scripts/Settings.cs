@@ -1,6 +1,5 @@
 using Godot;
-
-public static class PlayerSettings
+static class PlayerSettings
 {
     public static class PlayerInput
     {
@@ -15,7 +14,7 @@ public static class PlayerSettings
     }
 }
 
-public static class GameSettings
+static class GameSettings
 {
     internal const float MaxWalkSpeed = 4f;
     internal const float MaxSprintSpeed = 6f;
@@ -24,14 +23,15 @@ public static class GameSettings
     
     internal const float DashForce = 32f;
     internal const float DashCooldown = 0.5f;
-    internal const float DashPadding = 0.4f;
+    internal const float DashPadding = 0.3f;
     internal const float DashTime = 0.2f;
     internal const float DashFalloff = 0.2f;
+    internal const float DashWallLoss = 3f;
     
     internal const float Friction = 0.9f;
     internal const float Control= 0.2f;
     internal const float SprintDeadzone= 0.2f;
     
-    internal const float StepUpHeight= 0.5f;
+    internal const float StepUpHeight= 0.21f;
     internal const float CameraOffset = 1.57f;
 }
