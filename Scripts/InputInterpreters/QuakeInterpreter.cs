@@ -6,28 +6,28 @@ public partial class QuakeInterpreter : InputInterpreter
     public override void HandleNavigationInputs(PlayerInput.NavigationInput navigationInput, Player player)
     {
         bool floored = player.CharacterBody.IsOnFloor();
-        SharedFunctions.HandleJumpVars(floored, navigationInput.MovementInputs.Jump);
+        NavigationFunctions.HandleJumpVars(floored, navigationInput.MovementInputs.Jump);
 
         Vector3 HandleMovement(PlayerInput.MovementInput movementInput, CharacterBody3D body, Basis forward)
         {
-            float moveSpeed = SharedFunctions.GetSprint(movementInput.Movement, movementInput.Sprint) > 0f && floored ? GameSettings.MaxSprintSpeed : GameSettings.MaxWalkSpeed;
-            var velocities = SharedFunctions.CalculateInput(movementInput.Movement, forward, body.Velocity, floored);
+            float moveSpeed = NavigationFunctions.GetSprint(movementInput.Movement, movementInput.Sprint) > 0f && floored ? GameSettings.MaxSprintSpeed : GameSettings.MaxWalkSpeed;
+            var velocities = NavigationFunctions.CalculateInput(movementInput.Movement, forward, body.Velocity, floored);
 
-            body.Position += SharedFunctions.HandleSteps(player, velocities.inputVelocity);
+            body.Position += NavigationFunctions.HandleSteps(player, velocities.inputVelocity);
 
-            Vector3 dash = SharedFunctions.Dash(movementInput.Dash, floored, movementInput.Movement, player.CharacterBody.IsOnWall()) * forward;
-            bool canJump = SharedFunctions.CanJump(navigationInput.MovementInputs.Jump, floored, dash != Vector3.Zero);
+            Vector3 dash = NavigationFunctions.Dash(movementInput.Dash, floored, movementInput.Movement, player.CharacterBody.IsOnWall()) * forward;
+            bool canJump = NavigationFunctions.CanJump(navigationInput.MovementInputs.Jump, floored, dash != Vector3.Zero);
 
             if (dash != Vector3.Zero)
-                return dash + new Vector3(0, SharedFunctions.Gravity(), 0);
+                return dash + new Vector3(0, NavigationFunctions.Gravity(), 0);
 
-            float friction = SharedFunctions.CalculateFriction(floored, velocities.newVelocity, moveSpeed, movementInput.Movement.Length(), player.CharacterBody.IsOnWall());
-            float speed = SharedFunctions.CalculateSpeed(velocities.oldVelocity.Length(), moveSpeed, velocities.newVelocity.Length(), friction);
+            float friction = NavigationFunctions.CalculateFriction(floored, velocities.newVelocity, moveSpeed, movementInput.Movement.Length(), player.CharacterBody.IsOnWall());
+            float speed = NavigationFunctions.CalculateSpeed(velocities.oldVelocity.Length(), moveSpeed, velocities.newVelocity.Length(), friction);
 
-            Vector3 finalVelocity = SharedFunctions.MovementVelocity(velocities.newVelocity, speed, body.Velocity.Y + SharedFunctions.Gravity());
+            Vector3 finalVelocity = NavigationFunctions.MovementVelocity(velocities.newVelocity, speed, body.Velocity.Y + NavigationFunctions.Gravity());
 
             if (canJump)
-                finalVelocity = SharedFunctions.Jump(finalVelocity, velocities.inputVelocity);
+                finalVelocity = NavigationFunctions.Jump(finalVelocity, velocities.inputVelocity);
 
             return finalVelocity;
         }

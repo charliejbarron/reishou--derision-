@@ -7,40 +7,69 @@ public partial class LevelNavigationManager : Node
     Player _player;
 
     // Level
-    InputInterpreter _currentInterpreter;
+    int _currentChunk;
+    Chunk[] _chunks;
 
-    // MovementInterpreter _movementInterpreter;
-    // CameraInterpreter _cameraInterpreter;
+    InputInterpreter[] _loadedInterpreters;
 
-    public override void _Ready()
+
+    public void Setup((Chunk[] chunks, int current, InputInterpreter[] interpreters) scene)
     {
-        _currentInterpreter = new QuakeInterpreter();
-        Startup();
-    }
-
-    void Startup()
-    {
-        _player = new()
+        void SetupScene()
         {
-            CharacterBody = ResourceLoader.Load<PackedScene>("res://Scenes/player.tscn").Instantiate() as CharacterBody3D,
-            Camera = ResourceLoader.Load<PackedScene>("res://Scenes/camera.tscn").Instantiate() as Camera3D
-        };
+            _chunks = scene.chunks;
+            _currentChunk = scene.current;
 
-        AddChild(_player.CharacterBody);
-        AddChild(_player.Camera);
+            _loadedInterpreters = scene.interpreters;
+        }
 
-        _player.CharacterStepCast = _player.CharacterBody?.GetNode<RayCast3D>("StepCast");
+        void SetupPlayer()
+        {
+            _player = new()
+            {
+                CharacterBody = ResourceLoader.Load<PackedScene>("res://Scenes/player.tscn").Instantiate() as CharacterBody3D,
+                Camera = ResourceLoader.Load<PackedScene>("res://Scenes/camera.tscn").Instantiate() as Camera3D
+            };
 
-        if (_player.CharacterStepCast == null)
-            return;
+            AddChild(_player.CharacterBody);
+            AddChild(_player.Camera);
 
-        _player.CharacterStepCast.Position = new Vector3(0, GameSettings.CameraOffset, 0);
-        _player.CharacterStepCast.TargetPosition = new Vector3(0, -GameSettings.CameraOffset + 1e-08f, 0);
+            _player.CharacterStepCast = _player.CharacterBody?.GetNode<RayCast3D>("StepCast");
+
+            if (_player.CharacterStepCast == null)
+                return;
+
+            _player.CharacterStepCast.Position = new Vector3(0, GameSettings.CameraOffset, 0);
+            _player.CharacterStepCast.TargetPosition = new Vector3(0, -GameSettings.CameraOffset + 1e-08f, 0);
+        }
+
+        SetupScene();
+        SetupPlayer();
     }
 
-    public void HandleNavigation(PlayerInput.NavigationInput navigationInputs)
+    public void HandleNavigation(PlayerInput inputs)
     {
-        _currentInterpreter.HandleNavigationInputs(navigationInputs, _player);
+        InputInterpreter currentInterpreter = _loadedInterpreters[_chunks[_currentChunk].Interpreter];
+
+        void SwitchChunk(int chunk)
+        {
+            if (PlayerSettings.Misc.DrawDebug)
+            {
+                foreach (var split in _chunks[_currentChunk].Splits)
+                {
+                    ChunkFunctions.DrawDebug(split, _chunks[_chunks[_currentChunk].VisibleChunks[split.Connected]].Name);
+                }
+            }
+
+            if (chunk == -1)
+                return;
+        
+            _currentChunk = _chunks[_currentChunk].VisibleChunks[chunk];
+            GD.Print(_chunks[_currentChunk].Name);
+        }
+
+        currentInterpreter.HandleNavigationInputs(inputs.NavigationInputs, _player);
+        SwitchChunk(currentInterpreter.HandleChunkNavigation(_chunks[_currentChunk].Splits, _player.CharacterBody.GlobalPosition));
     }
 }
 

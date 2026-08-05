@@ -3,28 +3,25 @@ using Godot;
 [GlobalClass]
 public partial class InputManager : Node
 {
-    PlayerInput _lastInput;
-
     Vector2 _mouseInput;
     float _sprintTimer;
     bool _scheduleDash;
     
-    public PlayerInput CollectInputs(float delta)
+    public PlayerInput CollectInputs()
     {
         PlayerInput playerInput = new()
         {
             NavigationInputs = new()
             {
-                MovementInputs = CollectMovement(_lastInput.NavigationInputs.MovementInputs, delta),
+                MovementInputs = CollectMovement(),
                 CameraInputs = CameraInput(PlayerSettings.PlayerInput.MouseSensitivity, PlayerSettings.PlayerInput.ControllerSensitivity)
             }
         };
 
-        _lastInput = playerInput;
         return playerInput;
     }
     
-    PlayerInput.MovementInput CollectMovement(PlayerInput.MovementInput movementInput, float delta)
+    PlayerInput.MovementInput CollectMovement()
     {
         Vector2 MovementInput()
         {
@@ -49,25 +46,11 @@ public partial class InputManager : Node
         bool DashInput()
         {
             bool input = Input.IsActionJustPressed("Dash");
-
-            // if (movementInput.Dash <= 0f)
-            //     return input || _scheduleDash ? DashCooldown : 0f;
-            //
-            // _scheduleDash = (_scheduleDash || input) && movementInput.Dash < 0.3f;
-            // return movementInput.Dash - delta;
             return input;
         }
 
         bool SprintInput()
         {
-            // bool input = Input.IsActionPressed("Dash") || Input.IsActionPressed("Sprint");
-            // bool held = movementInput.Sprint > 1e-08 && movementInput.Movement != Vector2.Zero && PlayerSettings.PlayerInputSetting.ToggleSprint;
-            //
-            // bool sprinting = (input || held) && movementInput.Movement != Vector2.Zero;
-            //
-            // _sprintTimer = sprinting ? PlayerSettings.PlayerInputSetting.SprintPadding : _sprintTimer - delta;
-            //
-            // return _sprintTimer >= 0 ? Mathf.Min(movementInput.Sprint + delta, movementInput.Dash > DashCooldown - 1e-08 ? 1.5f : 3f) : 0f;
             return Input.IsActionPressed("Dash") || Input.IsActionPressed("Sprint");
         }
 

@@ -1,6 +1,7 @@
+using System.Collections.Generic;
 using Godot;
 
-internal static class SharedFunctions
+internal static class NavigationFunctions
 {
     internal static Vector3 HandleSteps(Player player, Vector3 input)
     {
@@ -158,6 +159,103 @@ internal static class SharedFunctions
         Vector3 inputVelocity = velocity + movementDir * (floored ? GameSettings.Control * (velocity.Length() * 0.2f + 1) : GameSettings.Control);
 
         return (movementDir, velocity, inputVelocity);
+    }
+}
+
+public static class ChunkFunctions
+{
+    internal static int CheckSplits(Split[] splits, Vector3 playerPos, int[] candidates = null)
+    {
+        candidates ??= IsInfront(splits, playerPos);
+        
+        switch (candidates.Length)
+        {
+            case 0:
+                return -1;
+            case 1 when Ignore(splits[candidates[0]]):
+                return candidates[0];
+        }
+
+        int pick = -1;
+        for (int i = 0; i < candidates.Length; i++)
+        {
+            bool matchHeight = CheckHeight(splits[candidates[i]], playerPos.Y);
+            
+            float width = GetWidth(splits[candidates[i]], new Vector2(playerPos.X, playerPos.Z));
+            bool matchWidth = width < 0f;
+
+            bool match = matchWidth && matchHeight;
+
+            if (match)
+            {
+                pick = candidates[i];
+                break;
+            }
+
+            if (pick == -1 && (matchWidth || splits[candidates[i]].Width < 0f) && (matchHeight || splits[candidates[i]].Height < 0f))
+            {
+                pick = candidates[i];
+            }
+        }
+
+        return pick;
+    }
+
+    
+    internal static int[] IsInfront(Split[] splits, Vector3 playerPos)
+    {
+        List<int> candidates = new List<int>();
+        for (int i = 0; i < splits.Length; i++)
+        {
+            Vector3 localPos = playerPos - splits[i].Position;
+            float dot = splits[i].Direction.Normalized().Dot(new Vector2(localPos.X, localPos.Z).Normalized());
+            
+            if (dot <= 0f)
+                continue;
+            
+            candidates.Add(i);
+        }
+
+        return candidates.ToArray();
+    }
+
+    internal static bool Ignore(Split split)
+    {
+        return split.Width < 0f && split.Height < 0f;
+    }
+
+    internal static bool CheckHeight(Split split, float playerPosY)
+    {
+        return playerPosY > split.Position.Y - 1e-02 && playerPosY < split.Position.Y + Mathf.Abs(split.Height);
+    }
+
+    internal static float GetWidth(Split split, Vector2 playerPos)
+    {
+        Vector2 length = new Vector2(-split.Direction.Y, split.Direction.X);
+        
+        float offset = Mathf.Abs(length.Dot(playerPos - new Vector2(split.Position.X, split.Position.Z))) - Mathf.Abs(split.Width);
+
+        return offset;
+    }
+    
+    internal static void DrawDebug(Split split, string name)
+    {
+        DebugDraw3D.DrawArrowRay(split.Position, new Vector3(split.Direction.X, 0, split.Direction.Y), 1f, Colors.MediumSpringGreen, 0.3f);
+
+        Vector3 widthOffset = new Vector3(-split.Direction.Y, 0, split.Direction.X) * Mathf.Abs(split.Width);
+        Vector3 heightOffset = Vector3.Up * Mathf.Abs(split.Height);
+
+        Color heightDCol = split.Height < 0f ? Colors.GreenYellow : Colors.MediumSpringGreen;
+        Color heightUCol = split.Height < 0f ? Colors.MediumVioletRed : Colors.PaleVioletRed;
+        Color widthLCol = split.Width < 0f ? Colors.BlueViolet : Colors.MediumPurple;
+        Color widthRCol = split.Width < 0f ? Colors.Blue : Colors.MediumTurquoise;
+        
+        DebugDraw3D.DrawLine(split.Position + widthOffset, split.Position - widthOffset, heightDCol);
+        DebugDraw3D.DrawLine(split.Position + widthOffset + heightOffset, split.Position - widthOffset + heightOffset, heightUCol);
+        DebugDraw3D.DrawLine(split.Position - widthOffset, split.Position - widthOffset + heightOffset, widthLCol);
+        DebugDraw3D.DrawLine(split.Position + widthOffset, split.Position + widthOffset + heightOffset, widthRCol);
+        
+        DebugDraw3D.DrawText(split.Position + heightOffset * 1.5f, name, 48);
     }
 }
 
