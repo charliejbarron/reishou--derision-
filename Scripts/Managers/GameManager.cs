@@ -8,8 +8,6 @@ public partial class GameManager : Node
     InputManager _inputManager;
     LevelNavigationManager _levelNavigationManager;
     
-    readonly string _playerScene = "";
-    
     public override void _Ready()
     {
         _inputManager = GetNode<InputManager>("InputManager");

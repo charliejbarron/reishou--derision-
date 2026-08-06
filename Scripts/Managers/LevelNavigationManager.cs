@@ -6,24 +6,29 @@ public partial class LevelNavigationManager : Node
     // Player
     Player _player;
 
-    // Level
+    // - - Level - -
+    // Chunks
     int _currentChunk;
     Chunk[] _chunks;
 
+    //Interpreters
     InputInterpreter[] _loadedInterpreters;
+    InputInterpreter.Parameters[][] _loadedParameters;
 
 
     public void Setup((Chunk[] chunks, int current, InputInterpreter[] interpreters) scene)
     {
-        void SetupScene()
+        Vector3 SetupScene()
         {
             _chunks = scene.chunks;
             _currentChunk = scene.current;
 
             _loadedInterpreters = scene.interpreters;
+            
+            return _chunks[_currentChunk].SpawnPoint;
         }
 
-        void SetupPlayer()
+        void SetupPlayer(Vector3 spawn)
         {
             _player = new()
             {
@@ -34,7 +39,11 @@ public partial class LevelNavigationManager : Node
             AddChild(_player.CharacterBody);
             AddChild(_player.Camera);
 
-            _player.CharacterStepCast = _player.CharacterBody?.GetNode<RayCast3D>("StepCast");
+            if (_player.CharacterBody == null)
+                return;
+            
+            _player.CharacterBody.GlobalPosition = spawn;
+            _player.CharacterStepCast = _player.CharacterBody.GetNode<RayCast3D>("StepCast");
 
             if (_player.CharacterStepCast == null)
                 return;
@@ -43,34 +52,34 @@ public partial class LevelNavigationManager : Node
             _player.CharacterStepCast.TargetPosition = new Vector3(0, -GameSettings.CameraOffset + 1e-08f, 0);
         }
 
-        SetupScene();
-        SetupPlayer();
+        Vector3 spawn = SetupScene();
+        SetupPlayer(spawn);
     }
 
     public void HandleNavigation(PlayerInput inputs)
     {
         InputInterpreter currentInterpreter = _loadedInterpreters[_chunks[_currentChunk].Interpreter];
 
-        void SwitchChunk(int chunk)
+        void SwitchChunk()
         {
             if (PlayerSettings.Misc.DrawDebug)
-            {
                 foreach (var split in _chunks[_currentChunk].Splits)
-                {
                     ChunkFunctions.DrawDebug(split, _chunks[_chunks[_currentChunk].VisibleChunks[split.Connected]]);
-                }
-            }
+
+            int chunk = currentInterpreter.HandleChunkNavigation(_chunks[_currentChunk].Splits, _player.CharacterBody.GlobalPosition);
 
             if (chunk == -1)
                 return;
 
-            GD.Print(chunk);
+            // _chunks[_currentChunk].Events.OnExit();
             _currentChunk = _chunks[_currentChunk].VisibleChunks[chunk];
-            GD.Print(_chunks[_currentChunk].Name);
+            // _chunks[_currentChunk].Events.OnEnter();
+            
+            GD.Print("Switch to: " + _chunks[_currentChunk].Name + ", With: " + _loadedInterpreters[_chunks[_currentChunk].Interpreter].GetType().Name);
         }
 
-        currentInterpreter.HandleNavigationInputs(inputs.NavigationInputs, _player);
-        SwitchChunk(currentInterpreter.HandleChunkNavigation(_chunks[_currentChunk].Splits, _player.CharacterBody.GlobalPosition));
+        currentInterpreter.HandleMovementInputs(inputs.NavigationInputs, _player);
+        SwitchChunk();
     }
 }
 

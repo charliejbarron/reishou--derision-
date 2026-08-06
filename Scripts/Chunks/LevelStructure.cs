@@ -2,17 +2,20 @@ using Godot;
 
 public class Scene
 {
+    public int StartingChunk = 0;
     public Chunk[] Chunks;
-    public string[] Interpreters;
+    public SceneInterpreter[] Interpreters;
 }
 
-public class Chunk
+public struct Chunk()
 {
     public string Name = "Chunk";
-    public int[] VisibleChunks;
-    public Split[] Splits;
+    public Vector3 SpawnPoint = default;
+    public int[] VisibleChunks = new int[] { };
+    public Split[] Splits = new Split[] { };
     public int Interpreter = 0;
     public int Parameters = 0;
+    // public GameEvents Events = new GameEvents();
 }
 
 public struct Split
@@ -22,4 +25,23 @@ public struct Split
     public float Width;
     public float Height;
     public int Connected;
+}
+
+public class SceneInterpreter
+{
+    public string TypeName;
+    public InputInterpreter.Parameters[] Parameters;
+}
+
+public class GameEvents
+{
+    public void OnEnter()
+    {
+        
+    }
+
+    public void OnExit()
+    {
+        
+    }
 }

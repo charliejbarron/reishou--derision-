@@ -2,3 +2,8 @@ root = true
 
 [*]
 charset = utf-8
+
+
+[*.cs]
+# CS0169: Field is never used
+dotnet_diagnostic.CS0169.severity = suggestion

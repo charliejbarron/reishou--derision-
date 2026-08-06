@@ -8,7 +8,7 @@ public partial class InputInterpreter : Resource
         
     }
     
-    public virtual void HandleNavigationInputs(PlayerInput.NavigationInput navigationInput, Player player)
+    public virtual void HandleMovementInputs(PlayerInput.NavigationInput navigationInput, Player player)
     {
     }
 

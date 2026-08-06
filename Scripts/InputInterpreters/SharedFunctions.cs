@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 
-internal static class NavigationFunctions
+internal static class Interpreter
 {
     internal static Vector3 HandleSteps(Player player, Vector3 input)
     {
@@ -16,16 +16,13 @@ internal static class NavigationFunctions
 
         Vector3 point = player.CharacterBody.ToLocal(player.CharacterStepCast.GetCollisionPoint()) * new Vector3(0.1f, 1f, 0.1f);
 
-        if (point.Y < 1e-08f)
-            return Vector3.Zero;
-
-        return point;
+        return point.Y < 1e-08f ? Vector3.Zero : point;
     }
 
     internal static Vector3 Dash(bool dash, bool floored, Vector2 moveInput, bool isOnWall)
     {
         SharedVariables.DashVariables dashVars = SharedVariables.DashVars;
-        
+
         if (floored != dashVars.TouchedFloor)
             dashVars.DashCooldown = 0;
 
@@ -36,7 +33,7 @@ internal static class NavigationFunctions
 
         if (dashVars.DashTimer > GameSettings.DashFalloff)
         {
-            return dashVars.DashDir * GameSettings.DashForce * dashVars.DashTimer * (floored ? GameSettings.DashFloorForceMult : 1f);
+            return dashVars.DashDir * GameSettings.DashForce * dashVars.DashTimer;
         }
 
         dashVars.DashCooldown -= GameManager.Delta;
@@ -58,53 +55,70 @@ internal static class NavigationFunctions
 
     internal static float GetSprint(Vector2 moveInput, bool sprintInput)
     {
+        SharedVariables.SprintVariables sprintVars = SharedVariables.SprintVars;
+
         if (sprintInput)
         {
-            SharedVariables.SprintVars.PaddingTime = PlayerSettings.PlayerInput.SprintPadding;
-            SharedVariables.SprintVars.SprintTime = Mathf.Min(SharedVariables.SprintVars.SprintTime + GameManager.Delta, 3f);
-            return SharedVariables.SprintVars.SprintTime;
+            sprintVars.PaddingTime = PlayerSettings.PlayerInput.SprintPadding;
+            sprintVars.SprintTime = Mathf.Min(sprintVars.SprintTime + GameManager.Delta, 3f);
+            return sprintVars.SprintTime;
         }
 
         if (!PlayerSettings.PlayerInput.ToggleSprint)
         {
-            SharedVariables.SprintVars.SprintTime = 0f;
+            sprintVars.SprintTime = 0f;
             return 0f;
         }
 
-        if (moveInput.Length() >= GameSettings.SprintDeadzone && SharedVariables.SprintVars.PaddingTime > 0)
+        if (moveInput.Length() >= GameSettings.SprintDeadzone && sprintVars.PaddingTime > 0)
         {
-            SharedVariables.SprintVars.PaddingTime = PlayerSettings.PlayerInput.SprintPadding;
+            sprintVars.PaddingTime = PlayerSettings.PlayerInput.SprintPadding;
         }
 
-        SharedVariables.SprintVars.SprintTime = SharedVariables.SprintVars.PaddingTime <= 0f ? 0f : Mathf.Min(SharedVariables.SprintVars.SprintTime + GameManager.Delta, 3f);
-        SharedVariables.SprintVars.PaddingTime -= GameManager.Delta;
+        sprintVars.SprintTime = sprintVars.PaddingTime <= 0f ? 0f : Mathf.Min(sprintVars.SprintTime + GameManager.Delta, 3f);
+        sprintVars.PaddingTime -= GameManager.Delta;
 
-        return SharedVariables.SprintVars.SprintTime;
+        return sprintVars.SprintTime;
     }
 
     internal static bool CanJump(int jump, bool floored, bool dash = false, bool dbJump = true)
     {
-        bool nearFloor = SharedVariables.JumpVars.AirTiming > 0f || floored;
+        SharedVariables.JumpVariables jumpVars = SharedVariables.JumpVars;
+        HandleJumpVars();
+
+        bool nearFloor = jumpVars.AirTiming > 0f || floored;
         bool jumpInput = jump >= (PlayerSettings.PlayerInput.HoldJump ? 1 : 2);
 
         if (dash)
         {
             if (jumpInput)
-                SharedVariables.JumpVars.ScheduleJump = true;
-            
+                jumpVars.ScheduleJump = true;
+
             return false;
         }
 
-        if (SharedVariables.JumpVars.ScheduleJump)
+        if (jumpVars.ScheduleJump)
         {
-            SharedVariables.JumpVars.ScheduleJump = false;
+            jumpVars.ScheduleJump = false;
             jumpInput = true;
         }
-        
-        if (dbJump && !nearFloor && !SharedVariables.JumpVars.DoubleJump && jumpInput)
-            SharedVariables.JumpVars.DoubleJump = nearFloor = true;
 
-        return (jumpInput || SharedVariables.JumpVars.JumpTiming >= 0) && nearFloor;
+        if (dbJump && !nearFloor && !jumpVars.DoubleJump && jumpInput)
+            jumpVars.DoubleJump = nearFloor = true;
+
+        return (jumpInput || jumpVars.JumpTiming >= 0) && nearFloor;
+
+        void HandleJumpVars()
+        {
+            jumpVars.AirTiming -= GameManager.Delta;
+            jumpVars.JumpTiming = jump >= (PlayerSettings.PlayerInput.HoldJump ? 1 : 2) ? 0.15f : jumpVars.JumpTiming - GameManager.Delta;
+            
+            if (!floored) 
+                return;
+            
+            jumpVars.AirTiming = GameSettings.JumpAirTiming;
+            jumpVars.DoubleJump = false;
+        }
     }
 
     internal static Vector3 Jump(Vector3 finalVelocity, Vector3 inputVelocity)
@@ -117,15 +131,6 @@ internal static class NavigationFunctions
         newVelocity.Y = GameSettings.JumpHeight;
 
         return newVelocity;
-    }
-
-    internal static void HandleJumpVars(bool floored, int jump)
-    {
-        if (floored)
-            SharedVariables.JumpVars.DoubleJump = false;
-
-        SharedVariables.JumpVars.AirTiming = floored ? 0.2f : SharedVariables.JumpVars.AirTiming - GameManager.Delta;
-        SharedVariables.JumpVars.JumpTiming = jump >= (PlayerSettings.PlayerInput.HoldJump ? 1 : 2) ? 0.15f : SharedVariables.JumpVars.JumpTiming - GameManager.Delta;
     }
 
     internal static float CalculateFriction(bool floored, Vector3 newVelocity, float targetSpeed, float input, bool isOnWall)
@@ -162,6 +167,18 @@ internal static class NavigationFunctions
 
         return (movementDir, velocity, inputVelocity);
     }
+
+    internal static Basis InputBasis(float x, float y, float z)
+    {
+        Basis degBasis = Basis.FromEuler(new Vector3(x, y, z) * (Mathf.Pi / 180));
+        return degBasis;
+    }
+
+    internal static Basis InputBasis(Vector3 input)
+    {
+        Basis degBasis = Basis.FromEuler(input * (Mathf.Pi / 180));
+        return degBasis;
+    }
 }
 
 public static class ChunkFunctions
@@ -169,7 +186,7 @@ public static class ChunkFunctions
     internal static int CheckSplits(Split[] splits, Vector3 playerPos)
     {
         int[] candidates = IsInfront(splits, playerPos);
-        
+
         switch (candidates.Length)
         {
             case 0:
@@ -182,7 +199,7 @@ public static class ChunkFunctions
         for (int i = 0; i < candidates.Length; i++)
         {
             bool matchHeight = CheckHeight(splits[candidates[i]], playerPos.Y);
-            
+
             float width = GetWidth(splits[candidates[i]], new Vector2(playerPos.X, playerPos.Z));
             bool matchWidth = width < 0f;
 
@@ -201,7 +218,7 @@ public static class ChunkFunctions
         return pick;
     }
 
-    
+
     internal static int[] IsInfront(Split[] splits, Vector3 playerPos)
     {
         List<int> candidates = new List<int>();
@@ -209,10 +226,10 @@ public static class ChunkFunctions
         {
             Vector3 localPos = playerPos - splits[i].Position;
             float dot = splits[i].Direction.Normalized().Dot(new Vector2(localPos.X, localPos.Z).Normalized());
-            
+
             if (dot <= 0f)
                 continue;
-            
+
             candidates.Add(i);
         }
 
@@ -232,12 +249,12 @@ public static class ChunkFunctions
     internal static float GetWidth(Split split, Vector2 playerPos)
     {
         Vector2 length = new Vector2(-split.Direction.Y, split.Direction.X);
-        
+
         float offset = Mathf.Abs(length.Dot(playerPos - new Vector2(split.Position.X, split.Position.Z))) - Mathf.Abs(split.Width);
 
         return offset;
     }
-    
+
     internal static void DrawDebug(Split split, Chunk connection)
     {
         DebugDraw3D.DrawArrowRay(split.Position, new Vector3(split.Direction.X, 0, split.Direction.Y), 1f, Colors.MediumSpringGreen, 0.3f);
@@ -249,13 +266,13 @@ public static class ChunkFunctions
         Color heightUCol = split.Height < 0f ? Colors.MediumVioletRed : Colors.PaleVioletRed;
         Color widthLCol = split.Width < 0f ? Colors.BlueViolet : Colors.MediumPurple;
         Color widthRCol = split.Width < 0f ? Colors.Blue : Colors.MediumTurquoise;
-        
+
         DebugDraw3D.DrawLine(split.Position + widthOffset, split.Position - widthOffset, heightDCol);
         DebugDraw3D.DrawLine(split.Position + widthOffset + heightOffset, split.Position - widthOffset + heightOffset, heightUCol);
         DebugDraw3D.DrawLine(split.Position - widthOffset, split.Position - widthOffset + heightOffset, widthLCol);
         DebugDraw3D.DrawLine(split.Position + widthOffset, split.Position + widthOffset + heightOffset, widthRCol);
-        
-        DebugDraw3D.DrawText(split.Position + heightOffset * 1.5f, connection.Name, 48);
+
+        DebugDraw3D.DrawText(split.Position + new Vector3(split.Direction.X, Mathf.Min(1.5f, Mathf.Abs(split.Height) / 2f), split.Direction.Y), connection.Name, 52);
     }
 }
 
