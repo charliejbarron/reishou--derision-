@@ -24,34 +24,36 @@ internal static class NavigationFunctions
 
     internal static Vector3 Dash(bool dash, bool floored, Vector2 moveInput, bool isOnWall)
     {
-        if (floored != SharedVariables.DashVars.TouchedFloor)
-            SharedVariables.DashVars.DashCooldown = 0;
+        SharedVariables.DashVariables dashVars = SharedVariables.DashVars;
+        
+        if (floored != dashVars.TouchedFloor)
+            dashVars.DashCooldown = 0;
 
         if (floored)
-            SharedVariables.DashVars.TouchedFloor = true;
+            dashVars.TouchedFloor = true;
 
-        SharedVariables.DashVars.DashTimer -= GameManager.Delta * (isOnWall ? GameSettings.DashWallLoss : 1);
+        dashVars.DashTimer -= GameManager.Delta * (isOnWall ? GameSettings.DashWallLoss : 1);
 
-        if (SharedVariables.DashVars.DashTimer > GameSettings.DashFalloff)
+        if (dashVars.DashTimer > GameSettings.DashFalloff)
         {
-            return SharedVariables.DashVars.DashDir * GameSettings.DashForce * SharedVariables.DashVars.DashTimer;
+            return dashVars.DashDir * GameSettings.DashForce * dashVars.DashTimer * (floored ? GameSettings.DashFloorForceMult : 1f);
         }
 
-        SharedVariables.DashVars.DashCooldown -= GameManager.Delta;
-        SharedVariables.DashVars.ScheduleDash -= GameManager.Delta;
+        dashVars.DashCooldown -= GameManager.Delta;
+        dashVars.ScheduleDash -= GameManager.Delta;
 
         if (dash)
-            SharedVariables.DashVars.ScheduleDash = GameSettings.DashPadding;
+            dashVars.ScheduleDash = GameSettings.DashPadding;
 
-        if (SharedVariables.DashVars.ScheduleDash < 0f || SharedVariables.DashVars.DashCooldown > 0f || !SharedVariables.DashVars.TouchedFloor)
+        if (dashVars.ScheduleDash < 0f || dashVars.DashCooldown > 0f || !dashVars.TouchedFloor)
             return Vector3.Zero;
 
-        SharedVariables.DashVars.ScheduleDash = 0f;
-        SharedVariables.DashVars.TouchedFloor = floored;
-        SharedVariables.DashVars.DashCooldown = GameSettings.DashCooldown;
-        SharedVariables.DashVars.DashTimer = GameSettings.DashTime + GameSettings.DashFalloff;
-        SharedVariables.DashVars.DashDir = moveInput == Vector2.Zero ? new Vector3(0, 0, -1) : new Vector3(moveInput.X, 0, -moveInput.Y).Normalized();
-        return SharedVariables.DashVars.DashDir * GameSettings.DashForce * GameManager.Delta * SharedVariables.DashVars.DashCooldown;
+        dashVars.ScheduleDash = 0f;
+        dashVars.TouchedFloor = floored;
+        dashVars.DashCooldown = GameSettings.DashCooldown;
+        dashVars.DashTimer = GameSettings.DashTime + GameSettings.DashFalloff;
+        dashVars.DashDir = moveInput == Vector2.Zero ? new Vector3(0, 0, -1) : new Vector3(moveInput.X, 0, -moveInput.Y).Normalized();
+        return dashVars.DashDir * GameSettings.DashForce * GameManager.Delta * dashVars.DashCooldown;
     }
 
     internal static float GetSprint(Vector2 moveInput, bool sprintInput)
@@ -164,9 +166,9 @@ internal static class NavigationFunctions
 
 public static class ChunkFunctions
 {
-    internal static int CheckSplits(Split[] splits, Vector3 playerPos, int[] candidates = null)
+    internal static int CheckSplits(Split[] splits, Vector3 playerPos)
     {
-        candidates ??= IsInfront(splits, playerPos);
+        int[] candidates = IsInfront(splits, playerPos);
         
         switch (candidates.Length)
         {
@@ -188,14 +190,12 @@ public static class ChunkFunctions
 
             if (match)
             {
-                pick = candidates[i];
+                pick = splits[candidates[i]].Connected;
                 break;
             }
 
             if (pick == -1 && (matchWidth || splits[candidates[i]].Width < 0f) && (matchHeight || splits[candidates[i]].Height < 0f))
-            {
-                pick = candidates[i];
-            }
+                pick = splits[candidates[i]].Connected;
         }
 
         return pick;
@@ -238,7 +238,7 @@ public static class ChunkFunctions
         return offset;
     }
     
-    internal static void DrawDebug(Split split, string name)
+    internal static void DrawDebug(Split split, Chunk connection)
     {
         DebugDraw3D.DrawArrowRay(split.Position, new Vector3(split.Direction.X, 0, split.Direction.Y), 1f, Colors.MediumSpringGreen, 0.3f);
 
@@ -255,7 +255,7 @@ public static class ChunkFunctions
         DebugDraw3D.DrawLine(split.Position - widthOffset, split.Position - widthOffset + heightOffset, widthLCol);
         DebugDraw3D.DrawLine(split.Position + widthOffset, split.Position + widthOffset + heightOffset, widthRCol);
         
-        DebugDraw3D.DrawText(split.Position + heightOffset * 1.5f, name, 48);
+        DebugDraw3D.DrawText(split.Position + heightOffset * 1.5f, connection.Name, 48);
     }
 }
 

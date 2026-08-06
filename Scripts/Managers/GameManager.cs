@@ -15,7 +15,7 @@ public partial class GameManager : Node
         _inputManager = GetNode<InputManager>("InputManager");
         _levelNavigationManager = GetNode<LevelNavigationManager>("LevelNavigationManager");
         
-        _levelNavigationManager.Setup(FileManager.LoadSceneNavigation());
+        _levelNavigationManager.Setup(FileManager.LoadSceneChunks());
     }
 
     public override void _PhysicsProcess(double delta)

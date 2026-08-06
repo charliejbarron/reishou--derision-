@@ -57,13 +57,14 @@ public partial class LevelNavigationManager : Node
             {
                 foreach (var split in _chunks[_currentChunk].Splits)
                 {
-                    ChunkFunctions.DrawDebug(split, _chunks[_chunks[_currentChunk].VisibleChunks[split.Connected]].Name);
+                    ChunkFunctions.DrawDebug(split, _chunks[_chunks[_currentChunk].VisibleChunks[split.Connected]]);
                 }
             }
 
             if (chunk == -1)
                 return;
-        
+
+            GD.Print(chunk);
             _currentChunk = _chunks[_currentChunk].VisibleChunks[chunk];
             GD.Print(_chunks[_currentChunk].Name);
         }

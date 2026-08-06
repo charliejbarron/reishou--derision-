@@ -12,8 +12,7 @@ public class Chunk
     public int[] VisibleChunks;
     public Split[] Splits;
     public int Interpreter = 0;
-    public int? Parameters = 0;
-    public InputInterpreter.Parameters CustomParameters;
+    public int Parameters = 0;
 }
 
 public struct Split
