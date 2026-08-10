@@ -23,4 +23,9 @@ public partial class GameManager : Node
 
         _levelNavigationManager.HandleNavigation(playerInput);
     }
+
+    public override void _Process(double delta)
+    {
+        _levelNavigationManager.HandleCamera();
+    }
 }

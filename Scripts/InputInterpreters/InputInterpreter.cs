@@ -12,8 +12,18 @@ public partial class InputInterpreter : Resource
     {
     }
 
-    public virtual int HandleChunkNavigation(Split[] splits, Vector3 playerPosition)
+    public virtual int HandleSplits(Split[] splits, CharacterBody3D player)
     {
-        return ChunkFunctions.CheckSplits(splits, playerPosition);
+        
+        
+        return SplitsFuncs.CheckNavigationSplits(splits, player.GlobalPosition);
+    }
+
+    public virtual void HandleBlockers(Split[] blockers, Player player)
+    {
+        var clamped = SplitsFuncs.BlockPlayer(blockers, player);
+
+        player.CharacterBody.GlobalPosition = clamped.newPosition;
+        player.CharacterBody.Velocity = clamped.newVelocity;
     }
 }

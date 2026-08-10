@@ -112,10 +112,10 @@ internal static class Interpreter
         {
             jumpVars.AirTiming -= GameManager.Delta;
             jumpVars.JumpTiming = jump >= (PlayerSettings.PlayerInput.HoldJump ? 1 : 2) ? 0.15f : jumpVars.JumpTiming - GameManager.Delta;
-            
-            if (!floored) 
+
+            if (!floored)
                 return;
-            
+
             jumpVars.AirTiming = GameSettings.JumpAirTiming;
             jumpVars.DoubleJump = false;
         }
@@ -181,9 +181,49 @@ internal static class Interpreter
     }
 }
 
-public static class ChunkFunctions
+public static class SplitsFuncs
 {
-    internal static int CheckSplits(Split[] splits, Vector3 playerPos)
+    internal static (Vector3 newPosition, Vector3 newVelocity) BlockPlayer(Split[] splits, Player player)
+    {
+        Vector3 position = player.CharacterBody.GlobalPosition;
+        Vector3 velocity = player.CharacterBody.Velocity;
+
+        int[] candidates = IsInfront(splits, player.CharacterBody.GlobalPosition);
+
+        if (candidates.Length == 0)
+            return (position, velocity);
+
+        for (int i = 0; i < candidates.Length; i++)
+        {
+            Split split = splits[candidates[i]];
+
+            bool matchHeight = split.Height < 0f || CheckHeight(split, position.Y);
+
+            float width = GetWidth(split, new Vector2(position.X, position.Z));
+            // Bug !!
+            // player slides through corners D:
+            bool matchWidth = split.Width < 0f || width <= 0f;
+
+            bool match = matchWidth && matchHeight;
+
+            if (!match)
+                continue;
+
+            Vector2 length = new Vector2(-split.Direction.Y, split.Direction.X);
+
+            float offset = HorizontalPos(length, new Vector2(position.X, position.Z), new Vector2(split.Position.X, split.Position.Z));
+            Vector3 clamped = split.Position + new Vector3(length.X, 0, length.Y) * offset;
+            position = new Vector3(clamped.X, position.Y, clamped.Z);
+
+            float velOffset = HorizontalPos(length, new Vector2(velocity.X, velocity.Z), Vector2.Zero);
+            Vector3 velClamped = new Vector3(length.X, 0, length.Y) * velOffset;
+            velocity = new Vector3(velClamped.X, velocity.Y, velClamped.Z);
+        }
+
+        return (position, velocity);
+    }
+
+    internal static int CheckNavigationSplits(Split[] splits, Vector3 playerPos)
     {
         int[] candidates = IsInfront(splits, playerPos);
 
@@ -218,14 +258,13 @@ public static class ChunkFunctions
         return pick;
     }
 
-
     internal static int[] IsInfront(Split[] splits, Vector3 playerPos)
     {
         List<int> candidates = new List<int>();
         for (int i = 0; i < splits.Length; i++)
         {
             Vector3 localPos = playerPos - splits[i].Position;
-            float dot = splits[i].Direction.Normalized().Dot(new Vector2(localPos.X, localPos.Z).Normalized());
+            float dot = splits[i].Direction.Dot(new Vector2(localPos.X, localPos.Z).Normalized());
 
             if (dot <= 0f)
                 continue;
@@ -250,29 +289,84 @@ public static class ChunkFunctions
     {
         Vector2 length = new Vector2(-split.Direction.Y, split.Direction.X);
 
-        float offset = Mathf.Abs(length.Dot(playerPos - new Vector2(split.Position.X, split.Position.Z))) - Mathf.Abs(split.Width);
+        float offset = Mathf.Abs(HorizontalPos(length, playerPos, new Vector2(split.Position.X, split.Position.Z))) - Mathf.Abs(split.Width);
 
         return offset;
     }
 
-    internal static void DrawDebug(Split split, Chunk connection)
+    internal static float HorizontalPos(Vector2 length, Vector2 playerPos, Vector2 split)
     {
-        DebugDraw3D.DrawArrowRay(split.Position, new Vector3(split.Direction.X, 0, split.Direction.Y), 1f, Colors.MediumSpringGreen, 0.3f);
+        return length.Dot(playerPos - new Vector2(split.X, split.Y));
+    }
 
-        Vector3 widthOffset = new Vector3(-split.Direction.Y, 0, split.Direction.X) * Mathf.Abs(split.Width);
-        Vector3 heightOffset = Vector3.Up * Mathf.Abs(split.Height);
+    internal static Chunk[] GetConnectedChunks(Split[] splits, int currentChunk, Chunk[] allChunks)
+    {
+        Chunk[] chunks = new Chunk[splits.Length];
 
-        Color heightDCol = split.Height < 0f ? Colors.GreenYellow : Colors.MediumSpringGreen;
-        Color heightUCol = split.Height < 0f ? Colors.MediumVioletRed : Colors.PaleVioletRed;
-        Color widthLCol = split.Width < 0f ? Colors.BlueViolet : Colors.MediumPurple;
-        Color widthRCol = split.Width < 0f ? Colors.Blue : Colors.MediumTurquoise;
+        for (int i = 0; i < splits.Length; i++)
+        {
+            chunks[i] = allChunks[allChunks[currentChunk].VisibleChunks[splits[i].Connected]];
+        }
 
-        DebugDraw3D.DrawLine(split.Position + widthOffset, split.Position - widthOffset, heightDCol);
-        DebugDraw3D.DrawLine(split.Position + widthOffset + heightOffset, split.Position - widthOffset + heightOffset, heightUCol);
-        DebugDraw3D.DrawLine(split.Position - widthOffset, split.Position - widthOffset + heightOffset, widthLCol);
-        DebugDraw3D.DrawLine(split.Position + widthOffset, split.Position + widthOffset + heightOffset, widthRCol);
+        return chunks;
+    }
 
-        DebugDraw3D.DrawText(split.Position + new Vector3(split.Direction.X, Mathf.Min(1.5f, Mathf.Abs(split.Height) / 2f), split.Direction.Y), connection.Name, 52);
+    internal static void DrawDebugSplits(Split[] splits, Chunk[] connections)
+    {
+        for (int s = 0; s < splits.Length; s++)
+        {
+            Split split = splits[s];
+            if (split.Connected > 0)
+                DebugDraw3D.DrawArrowRay(split.Position, new Vector3(split.Direction.X, 0, split.Direction.Y), 1f, Colors.MediumSpringGreen, 0.3f);
+
+            Vector3 widthOffset = new Vector3(-split.Direction.Y, 0, split.Direction.X) * Mathf.Abs(split.Width);
+            Vector3 heightOffset = Vector3.Up * Mathf.Abs(split.Height);
+
+            Color heightDCol = split.Height < 0f ? Colors.GreenYellow : Colors.MediumSpringGreen;
+            Color heightUCol = split.Height < 0f ? Colors.MediumVioletRed : Colors.PaleVioletRed;
+            Color widthLCol = split.Width < 0f ? Colors.BlueViolet : Colors.MediumPurple;
+            Color widthRCol = split.Width < 0f ? Colors.Blue : Colors.MediumTurquoise;
+
+            DebugDraw3D.DrawLine(split.Position + widthOffset, split.Position - widthOffset, heightDCol);
+            DebugDraw3D.DrawLine(split.Position + widthOffset + heightOffset, split.Position - widthOffset + heightOffset, heightUCol);
+            DebugDraw3D.DrawLine(split.Position - widthOffset, split.Position - widthOffset + heightOffset, widthLCol);
+            DebugDraw3D.DrawLine(split.Position + widthOffset, split.Position + widthOffset + heightOffset, widthRCol);
+
+            DebugDraw3D.DrawText(split.Position + new Vector3(split.Direction.X, Mathf.Min(1.5f, Mathf.Abs(split.Height) / 2f), split.Direction.Y), connections[s].Name, 52);
+        }
+    }
+
+    internal static void DrawDebugBlockers(Split[] blockers)
+    {
+        for (int b = 0; b < blockers.Length; b++)
+        {
+            Split blocker = blockers[b];
+
+            Color blockerCol = Colors.Red;
+            Color blockerColArrow = Colors.White;
+            Color blockerColArrowDir = Colors.DarkRed;
+
+            DebugDraw3D.DrawArrowRay(blocker.Position, new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrowDir, 0.3f);
+
+            Vector3 widthOffset = new Vector3(-blocker.Direction.Y, 0, blocker.Direction.X) * Mathf.Abs(blocker.Width);
+            Vector3 heightOffset = Vector3.Up * Mathf.Abs(blocker.Height);
+
+            DebugDraw3D.DrawArrowRay(blocker.Position + heightOffset / 2f, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow, 0.2f);
+
+            Color heightCol = blocker.Height > 0f ? blockerCol : Colors.Aquamarine;
+            Color widthCol = blocker.Width > 0f ? blockerCol : Colors.GreenYellow;
+            
+            DebugDraw3D.DrawLine(blocker.Position + widthOffset + heightOffset, blocker.Position - widthOffset + heightOffset, heightCol);
+            DebugDraw3D.DrawLine(blocker.Position + widthOffset, blocker.Position - widthOffset, heightCol);
+            
+            DebugDraw3D.DrawLine(blocker.Position - widthOffset, blocker.Position - widthOffset + heightOffset, widthCol);
+            DebugDraw3D.DrawLine(blocker.Position + widthOffset, blocker.Position + widthOffset + heightOffset, widthCol);
+
+            DebugDraw3D.DrawArrowRay(blocker.Position + widthOffset, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow, 0.2f);
+            DebugDraw3D.DrawArrowRay(blocker.Position - widthOffset, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow, 0.2f);
+            DebugDraw3D.DrawArrowRay(blocker.Position + widthOffset + heightOffset, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow, 0.2f);
+            DebugDraw3D.DrawArrowRay(blocker.Position - widthOffset + heightOffset, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow, 0.2f);
+        }
     }
 }
 

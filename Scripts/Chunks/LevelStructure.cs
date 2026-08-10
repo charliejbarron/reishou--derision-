@@ -13,6 +13,7 @@ public struct Chunk()
     public Vector3 SpawnPoint = default;
     public int[] VisibleChunks = new int[] { };
     public Split[] Splits = new Split[] { };
+    public Split[] Blockers = new Split[] { };
     public int Interpreter = 0;
     public int Parameters = 0;
     // public GameEvents Events = new GameEvents();

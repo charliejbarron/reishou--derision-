@@ -35,6 +35,9 @@ public static class FileManager
 
                 for (int s = 0; s < oldSplits[i].Length; s++)
                 {
+                    if (oldSplits[i][s].Connected < 0)
+                        continue;
+
                     Split split = oldSplits[i][s];
                     chunks[i].Splits[s].Direction = split.Direction.Normalized();
 
@@ -113,6 +116,49 @@ public static class FileManager
                             Height = -3,
                             Width = 2.5f,
                             Position = new Vector3(16, 0, 0)
+                        }
+                    ],
+                    Blockers =
+                    [
+                        new Split
+                        {
+                            Connected = 0,
+                            Direction = new Vector2(1, 0),
+                            Height = -5,
+                            Width = 6.75f,
+                            Position = new Vector3(16, 0, 9.25f)
+                        },
+                        new Split
+                        {
+                            Connected = 0,
+                            Direction = new Vector2(1, 0),
+                            Height = -5,
+                            Width = 6.75f,
+                            Position = new Vector3(16, 0, -9.25f)
+                        },
+                        new Split
+                        {
+                            Connected = 0,
+                            Direction = new Vector2(-1, 0),
+                            Height = -5,
+                            Width = 16f,
+                            Position = new Vector3(-16, 0, 0)
+                        },
+                        new Split
+                        {
+                            Connected = 0,
+                            Direction = new Vector2(0, -1),
+                            Height = -5,
+                            Width = 16f,
+                            Position = new Vector3(0, 0, -16)
+                        },
+                        new Split
+                        {
+                            Connected = 0,
+                            Direction = new Vector2(0, 1),
+                            Height = -5,
+                            Width = 16f,
+                            Position = new Vector3(0, 0, 16)
                         }
                     ]
                 },

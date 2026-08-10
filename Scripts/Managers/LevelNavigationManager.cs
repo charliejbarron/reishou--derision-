@@ -60,14 +60,8 @@ public partial class LevelNavigationManager : Node
     {
         InputInterpreter currentInterpreter = _loadedInterpreters[_chunks[_currentChunk].Interpreter];
 
-        void SwitchChunk()
+        void SwitchChunk(int chunk)
         {
-            if (PlayerSettings.Misc.DrawDebug)
-                foreach (var split in _chunks[_currentChunk].Splits)
-                    ChunkFunctions.DrawDebug(split, _chunks[_chunks[_currentChunk].VisibleChunks[split.Connected]]);
-
-            int chunk = currentInterpreter.HandleChunkNavigation(_chunks[_currentChunk].Splits, _player.CharacterBody.GlobalPosition);
-
             if (chunk == -1)
                 return;
 
@@ -79,7 +73,20 @@ public partial class LevelNavigationManager : Node
         }
 
         currentInterpreter.HandleMovementInputs(inputs.NavigationInputs, _player);
-        SwitchChunk();
+        currentInterpreter.HandleBlockers(_chunks[_currentChunk].Blockers, _player);
+        SwitchChunk(currentInterpreter.HandleSplits(_chunks[_currentChunk].Splits, _player.CharacterBody));
+        
+        if (PlayerSettings.Misc.DrawDebug)
+        {
+            Chunk[] connectedChunks = SplitsFuncs.GetConnectedChunks(_chunks[_currentChunk].Splits, _currentChunk, _chunks);
+            SplitsFuncs.DrawDebugSplits(_chunks[_currentChunk].Splits, connectedChunks);
+            SplitsFuncs.DrawDebugBlockers(_chunks[_currentChunk].Blockers);
+        }
+    }
+
+    public void HandleCamera()
+    {
+        
     }
 }
 

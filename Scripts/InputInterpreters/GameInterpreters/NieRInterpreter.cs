@@ -33,13 +33,12 @@ public partial class NieRInterpreter : QuakeInterpreter
 
         Transform3D HandleCamera(Vector2 cameraInput, Node3D camera, Vector3 bodyPosition)
         {
-            Transform3D transform = new Transform3D();
+            Transform3D transform = new Transform3D
+            {
+                Origin = bodyPosition + new Vector3(0, GameSettings.CameraOffset, 0) + camera.Basis.Z * 4f,
+                Basis = Interpreter.InputBasis(Mathf.Clamp(camera.RotationDegrees.X - cameraInput.Y, -90f, 90f), camera.RotationDegrees.Y - cameraInput.X, 0)
+            };
 
-            transform.Origin = bodyPosition + new Vector3(0, GameSettings.CameraOffset, 0) + camera.Basis.Z * 4f;
-            transform.Basis = Interpreter.InputBasis(Mathf.Clamp(camera.RotationDegrees.X - cameraInput.Y, -90f, 90f), camera.RotationDegrees.Y - cameraInput.X, 0);
-
-            GD.Print(cameraInput);
-            
             return transform;
         }
 
