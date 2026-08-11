@@ -3,13 +3,13 @@ using Godot;
 [GlobalClass]
 public partial class QuakeInterpreter : InputInterpreter
 {
-    public override void HandleMovementInputs(PlayerInput.NavigationInput navigationInput, Player player)
+    public override void HandleMovementInputs(PlayerInput.NavigationInput navigationInput, Player player, InputInterpreterParameters parameters)
     {
         bool floored = player.CharacterBody.IsOnFloor();
 
         Vector3 HandleMovement(PlayerInput.MovementInput movementInput, CharacterBody3D body, Basis forward)
         {
-            float moveSpeed = Interpreter.GetSprint(movementInput.Movement, movementInput.Sprint) > 0f && floored ? GameSettings.MaxSprintSpeed : GameSettings.MaxWalkSpeed;
+            float moveSpeed = Interpreter.GetSprint(movementInput.Movement, body.Velocity.Length(), movementInput.Sprint) > 0f && floored ? GameSettings.MaxSprintSpeed : GameSettings.MaxWalkSpeed;
             var velocities = Interpreter.CalculateInput(movementInput.Movement, forward, body.Velocity, floored);
 
             body.Position += Interpreter.HandleSteps(player, velocities.inputVelocity);
@@ -31,12 +31,17 @@ public partial class QuakeInterpreter : InputInterpreter
             return finalVelocity;
         }
 
+        
+        player.CharacterBody.Velocity = HandleMovement(navigationInput.MovementInputs, player.CharacterBody, new Basis(Vector3.Up, -player.Camera.GlobalRotation.Y));
+        player.CharacterBody.MoveAndSlide();
+    }
+
+    public override Transform3D HandleCameraInputs(PlayerInput.NavigationInput navigationInput, Player player, InputInterpreterParameters parameters)
+    {
         Transform3D HandleCamera(Vector2 cameraInput, Node3D camera, Vector3 bodyPosition, float xInput)
         {
             float roll = float.Lerp(camera.RotationDegrees.Z, -PlayerSettings.PlayerInput.HorizontalCameraTiltFp * xInput,
                 GameManager.Delta * PlayerSettings.PlayerInput.HorizontalCameraTiltSpeedFp);
-
-            cameraInput *= PlayerSettings.PlayerInput.SensitivityReductionFp;
 
             Transform3D transform = new Transform3D
             {
@@ -46,10 +51,7 @@ public partial class QuakeInterpreter : InputInterpreter
             
             return transform;
         }
-
-        player.Camera.GlobalTransform = HandleCamera(navigationInput.CameraInputs, player.Camera, player.CharacterBody.GlobalPosition, navigationInput.MovementInputs.Movement.X);
-
-        player.CharacterBody.Velocity = HandleMovement(navigationInput.MovementInputs, player.CharacterBody, new Basis(Vector3.Up, -player.Camera.GlobalRotation.Y));
-        player.CharacterBody.MoveAndSlide();
+        
+        return HandleCamera(Interpreter.CalcCameraInputs(navigationInput.CameraInputs, true), player.Camera, player.CharacterBody.GlobalPosition, navigationInput.MovementInputs.Movement.X);
     }
 }

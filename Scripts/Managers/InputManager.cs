@@ -7,21 +7,14 @@ public partial class InputManager : Node
     float _sprintTimer;
     bool _scheduleDash;
     
-    public PlayerInput CollectInputs()
+    public PlayerInput.NavigationInput CollectMovementInputs()
     {
-        PlayerInput playerInput = new()
-        {
-            NavigationInputs = new()
-            {
-                MovementInputs = CollectMovement(),
-                CameraInputs = CameraInput(PlayerSettings.PlayerInput.MouseSensitivity, PlayerSettings.PlayerInput.ControllerSensitivity)
-            }
-        };
+        PlayerInput.NavigationInput movementInput = CollectMovement();
 
-        return playerInput;
+        return movementInput;
     }
     
-    PlayerInput.MovementInput CollectMovement()
+    PlayerInput.NavigationInput CollectMovement()
     {
         Vector2 MovementInput()
         {
@@ -54,33 +47,39 @@ public partial class InputManager : Node
             return Input.IsActionPressed("Dash") || Input.IsActionPressed("Sprint");
         }
 
-        PlayerInput.MovementInput movementInputs = new()
+        PlayerInput.CameraInput GetCameraInput(Vector2 mouseSens, Vector2 controllerSens)
         {
-            Movement = MovementInput(),
-            Jump = JumpInput(),
-            Dash = DashInput(),
-            Sprint = SprintInput()
+            Vector2 controllerInput = new Vector2(Input.GetAxis("Camera-Left", "Camera-Right"), -Input.GetAxis("Camera-Down", "Camera-Up"));
+
+            Vector2 mouseInput = _mouseInput * mouseSens * 0.01f;
+            controllerInput *= controllerSens * 15f * GameManager.Delta;
+
+            _mouseInput = Vector2.Zero;
+
+            PlayerInput.CameraInput input = new()
+            {
+                Mouse = mouseInput,
+                Controller = controllerInput
+            };
+
+            return input;
+        }
+        
+        PlayerInput.NavigationInput navigationInput = new()
+        {
+            MovementInputs = new ()
+            {
+                Movement = MovementInput(),
+                Jump = JumpInput(),
+                Dash = DashInput(),
+                Sprint = SprintInput()
+            },
+            CameraInputs = GetCameraInput(PlayerSettings.PlayerInput.MouseSensitivity, PlayerSettings.PlayerInput.ControllerSensitivity)
         };
 
-        return movementInputs;
+        return navigationInput;
     }
-
-    Vector2 CameraInput(Vector2 mouseSens, Vector2 controllerSens)
-    {
-        Vector2 controllerInput = new Vector2(Input.GetAxis("Camera-Left", "Camera-Right"), -Input.GetAxis("Camera-Down", "Camera-Up"));
-
-        Vector2 mouseInput = _mouseInput * mouseSens * 0.01f;
-        controllerInput *= controllerSens * 0.5f;
-
-        _mouseInput = Vector2.Zero;
-
-        Vector2 addedInputs = mouseInput + controllerInput;
-        // float limit = Mathf.Max(mouseInput.Length(), controllerInput.Length());
-        // Vector2 newInput = addedInputs.Normalized() * limit;
-
-        return addedInputs;
-    }
-
+    
     public override void _UnhandledInput(InputEvent @event)
     {
         if (@event is InputEventMouseMotion inputEvent)
@@ -106,7 +105,7 @@ public struct PlayerInput
     public struct NavigationInput
     {
         public MovementInput MovementInputs;
-        public Vector2 CameraInputs;
+        public CameraInput CameraInputs;
     }
 
     public struct MovementInput
@@ -115,6 +114,12 @@ public struct PlayerInput
         public int Jump;
         public bool Dash;
         public bool Sprint;
+    }
+    
+    public struct CameraInput
+    {
+        public Vector2 Mouse;
+        public Vector2 Controller;
     }
 
     public struct CombatInput

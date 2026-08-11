@@ -2,8 +2,10 @@
 
 [ext_resource type="Script" uid="uid://bnew8cmgoaaqq" path="res://Scripts/Managers/GameManager.cs" id="1_sfebq"]
 [ext_resource type="Script" uid="uid://bpb8tvvcbotik" path="res://Scripts/Managers/InputManager.cs" id="2_p60qp"]
+[ext_resource type="PackedScene" uid="uid://g3mnouly0etm" path="res://Scenes/player.tscn" id="3_7efg0"]
 [ext_resource type="Script" uid="uid://c2cl8fk7qvsmm" path="res://Scripts/Managers/LevelNavigationManager.cs" id="3_p60qp"]
 [ext_resource type="LightmapGIData" uid="uid://30r3ku34hs10" path="res://Scenes/gameManager.lmbake" id="3_vm7x0"]
+[ext_resource type="PackedScene" uid="uid://dvqtd58hbqi1m" path="res://Scenes/camera.tscn" id="4_g4hsr"]
 [ext_resource type="Texture2D" uid="uid://c37jb5omdl14e" path="res://addons/kenney_prototype_textures/dark/texture_01.png" id="5_2crpj"]
 [ext_resource type="Texture2D" uid="uid://4htl18rlqvon" path="res://addons/kenney_prototype_textures/red/texture_02.png" id="6_p60qp"]
 [ext_resource type="Texture2D" uid="uid://b3wmudakkx1bf" path="res://addons/kenney_prototype_textures/green/texture_02.png" id="7_41of3"]
@@ -74,6 +76,10 @@ metadata/_custom_type_script = "uid://bpb8tvvcbotik"
 [node name="LevelNavigationManager" type="Node" parent="." unique_id=842365493]
 script = ExtResource("3_p60qp")
 metadata/_custom_type_script = "uid://c2cl8fk7qvsmm"
+
+[node name="Player" parent="LevelNavigationManager" unique_id=582331314 instance=ExtResource("3_7efg0")]
+
+[node name="Camera3D" parent="LevelNavigationManager" unique_id=1568685294 instance=ExtResource("4_g4hsr")]
 
 [node name="Test Zone" type="Node3D" parent="." unique_id=456067295]
 

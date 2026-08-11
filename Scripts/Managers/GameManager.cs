@@ -14,18 +14,15 @@ public partial class GameManager : Node
         _levelNavigationManager = GetNode<LevelNavigationManager>("LevelNavigationManager");
         
         _levelNavigationManager.Setup(FileManager.LoadSceneChunks());
+        
+        Input.MouseMode = Input.MouseModeEnum.Captured;
     }
 
     public override void _PhysicsProcess(double delta)
     {
         Delta = (float)delta;
-        PlayerInput playerInput = _inputManager.CollectInputs();
+        PlayerInput.NavigationInput input = _inputManager.CollectMovementInputs();
 
-        _levelNavigationManager.HandleNavigation(playerInput);
-    }
-
-    public override void _Process(double delta)
-    {
-        _levelNavigationManager.HandleCamera();
+        _levelNavigationManager.HandleNavigation(input);
     }
 }

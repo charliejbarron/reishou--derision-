@@ -5,81 +5,110 @@ using System.Linq;
 
 public static class FileManager
 {
-    public static (Chunk[] chunks, int current, InputInterpreter[] interpreters) LoadSceneChunks()
+    public static (Chunk[] chunks, int current, InputInterpreter[] interpreters, InputInterpreterParameters[][] parametersArray) LoadSceneChunks()
     {
         Scene scene = JsonConvert.DeserializeObject<Scene>(TestJson());
 
-        Chunk[] fileChunks = SceneFunctions.AddSharedSplits(scene.Chunks);
+        Chunk[] fileChunks = AddSharedSplits(scene.Chunks);
 
-        InputInterpreter[] loadedInterpreters = SceneFunctions.LoadInterpreters(scene);
+        InputInterpreter[] loadedInterpreters = LoadInterpreters(scene);
+
+        InputInterpreterParameters[][] parametersArray = LoadParameters(scene);
 
         // GD.Print(JsonConvert.SerializeObject(scene, Formatting.Indented));
-        return (fileChunks, scene.StartingChunk, loadedInterpreters); // switch to use the scenes startup chunk
+        return (fileChunks, scene.StartingChunk, loadedInterpreters, parametersArray); // switch to use the scenes startup chunk
     }
 
-    static class SceneFunctions
+    static Chunk[] AddSharedSplits(Chunk[] chunks)
     {
-        internal static Chunk[] AddSharedSplits(Chunk[] chunks)
+        Split[][] oldSplits = new Split[chunks.Length][];
+
+        for (int i = 0; i < chunks.Length; i++)
         {
-            Split[][] oldSplits = new Split[chunks.Length][];
+            oldSplits[i] = chunks[i].Splits;
+        }
 
-            for (int i = 0; i < chunks.Length; i++)
-            {
-                oldSplits[i] = chunks[i].Splits;
-            }
+        for (int i = 0; i < chunks.Length; i++)
+        {
+            if (oldSplits[i] == null)
+                continue;
 
-            for (int i = 0; i < chunks.Length; i++)
+            for (int s = 0; s < oldSplits[i].Length; s++)
             {
-                if (oldSplits[i] == null)
+                if (oldSplits[i][s].Connected < 0)
                     continue;
 
-                for (int s = 0; s < oldSplits[i].Length; s++)
+                Split split = oldSplits[i][s];
+                chunks[i].Splits[s].Direction = split.Direction.Normalized();
+
+                int index = chunks[i].VisibleChunks[split.Connected];
+                int currentChunkInd = Array.IndexOf(chunks[index].VisibleChunks, i);
+
+                Split inverseSplit = split with
                 {
-                    if (oldSplits[i][s].Connected < 0)
-                        continue;
+                    Connected = currentChunkInd,
+                    Direction = -split.Direction.Normalized()
+                };
 
-                    Split split = oldSplits[i][s];
-                    chunks[i].Splits[s].Direction = split.Direction.Normalized();
-
-                    int index = chunks[i].VisibleChunks[split.Connected];
-                    int currentChunkInd = Array.IndexOf(chunks[index].VisibleChunks, i);
-
-                    Split inverseSplit = split with
-                    {
-                        Connected = currentChunkInd,
-                        Direction = -split.Direction.Normalized()
-                    };
-
-                    chunks[index].Splits = chunks[index].Splits == null ? new[] { inverseSplit } : chunks[index].Splits.Append(inverseSplit).ToArray();
-                }
+                chunks[index].Splits = chunks[index].Splits == null ? new[] { inverseSplit } : chunks[index].Splits.Append(inverseSplit).ToArray();
             }
-
-            GD.Print(JsonConvert.SerializeObject(chunks, Formatting.Indented));
-
-            return chunks;
         }
-
-        internal static InputInterpreter[] LoadInterpreters(Scene scene)
-        {
-            InputInterpreter[] loadedInterpreters = new InputInterpreter[scene.Interpreters.Length];
-
-            for (int i = 0; i < loadedInterpreters.Length; i++)
-            {
-                GD.Print(scene.Interpreters[i].TypeName);
-                if (GameSettings.BuiltinInterpreters.Contains(scene.Interpreters[i].TypeName))
-                {
-                    Type type = Type.GetType(scene.Interpreters[i].TypeName);
-
-                    if (type != null)
-                        loadedInterpreters[i] = (InputInterpreter)Activator.CreateInstance(type);
-                }
-                // Custom interpreters loaded via .pkc, then pulled in the same way (may need reference to assembly)
-                // https://docs.godotengine.org/en/stable/tutorials/export/exporting_pcks.html#modding-considerations
-            }
-
-            return loadedInterpreters;
-        }
+        
+        return chunks;
     }
+
+    static InputInterpreter[] LoadInterpreters(Scene scene)
+    {
+        InputInterpreter[] loadedInterpreters = new InputInterpreter[scene.Interpreters.Length];
+
+        for (int i = 0; i < loadedInterpreters.Length; i++)
+        {
+            if (GameSettings.BuiltinInterpreters.Contains(scene.Interpreters[i].TypeName))
+            {
+                Type type = Type.GetType(scene.Interpreters[i].TypeName);
+
+                if (type != null)
+                    loadedInterpreters[i] = (InputInterpreter)Activator.CreateInstance(type);
+            }
+            // Custom interpreters loaded via .pkc, then pulled in the same way (may need reference to assembly)
+            // https://docs.godotengine.org/en/stable/tutorials/export/exporting_pcks.html#modding-considerations
+        }
+
+        return loadedInterpreters;
+    }
+
+    static InputInterpreterParameters[][] LoadParameters(Scene scene)
+    {
+        InputInterpreterParameters[][] parameters = new InputInterpreterParameters[scene.Interpreters.Length][];
+
+        for (int p = 0; p < parameters.Length; p++)
+        {
+            if (GameSettings.BuiltinInterpreters.Contains(scene.Interpreters[p].TypeName))
+            {
+                Type type = Type.GetType(scene.Interpreters[p].TypeName + "Parameters");
+
+                GD.Print(type);
+                
+                if (type != null)
+                {
+                    parameters[p] = (InputInterpreterParameters[])JsonConvert.DeserializeObject(scene.Interpreters[p].ParametersJson, type.MakeArrayType());
+                    // https://stackoverflow.com/questions/42736347/newtonsoft-json-deserialization-into-specific-types
+                    
+                    continue;
+                }
+            }
+
+            parameters[p] = new InputInterpreterParameters[] { new () };
+        }
+
+        foreach (var VARIABLE in parameters)
+        {
+            GD.Print(VARIABLE[0].GetType());
+        }
+
+        return parameters;
+    }
+
 
     static string TestJson()
     {
@@ -90,13 +119,24 @@ public static class FileManager
             [
                 new SceneInterpreter
                 {
-                    TypeName = "QuakeInterpreter",
-                    Parameters = []
+                    TypeName = "QuakeInterpreter"
                 },
                 new SceneInterpreter
                 {
                     TypeName = "NieRInterpreter",
-                    Parameters = []
+                    ParametersJson = JsonConvert.SerializeObject(
+                        new InputInterpreterParameters[]
+                        {
+                            new NieRInterpreterParameters
+                            {
+                                CameraOffset = new Vector3(0, 0.2f, 10f)
+                            },
+                            new NieRInterpreterParameters
+                            {
+                                CameraOffset = new Vector3(0, 0.2f, 5f)
+                            }
+                        }
+                    )
                 }
             ],
             Chunks = new[]
@@ -109,7 +149,7 @@ public static class FileManager
                     VisibleChunks = [1],
                     Splits =
                     [
-                        new Split
+                        new()
                         {
                             Connected = 0,
                             Direction = new Vector2(1, 0).Normalized(),
@@ -120,7 +160,7 @@ public static class FileManager
                     ],
                     Blockers =
                     [
-                        new Split
+                        new()
                         {
                             Connected = 0,
                             Direction = new Vector2(1, 0),
@@ -128,7 +168,7 @@ public static class FileManager
                             Width = 6.75f,
                             Position = new Vector3(16, 0, 9.25f)
                         },
-                        new Split
+                        new()
                         {
                             Connected = 0,
                             Direction = new Vector2(1, 0),
@@ -136,7 +176,7 @@ public static class FileManager
                             Width = 6.75f,
                             Position = new Vector3(16, 0, -9.25f)
                         },
-                        new Split
+                        new()
                         {
                             Connected = 0,
                             Direction = new Vector2(-1, 0),
@@ -144,7 +184,7 @@ public static class FileManager
                             Width = 16f,
                             Position = new Vector3(-16, 0, 0)
                         },
-                        new Split
+                        new()
                         {
                             Connected = 0,
                             Direction = new Vector2(0, -1),
@@ -152,7 +192,7 @@ public static class FileManager
                             Width = 16f,
                             Position = new Vector3(0, 0, -16)
                         },
-                        new Split
+                        new()
                         {
                             Connected = 0,
                             Direction = new Vector2(0, 1),
@@ -170,7 +210,7 @@ public static class FileManager
                     VisibleChunks = [2, 0],
                     Splits =
                     [
-                        new Split
+                        new()
                         {
                             Connected = 0,
                             Direction = new Vector2(1, 0),
@@ -191,11 +231,12 @@ public static class FileManager
                 {
                     Name = "CorridorEnd",
                     SpawnPoint = new Vector3(40, 0, 1.5f),
-                    Interpreter = 0,
+                    Interpreter = 1,
+                    Parameters = 1,
                     VisibleChunks = [1, 2],
                     Splits =
                     [
-                        new Split
+                        new()
                         {
                             Connected = 1,
                             Direction = new Vector2(-1, 1),
@@ -208,6 +249,7 @@ public static class FileManager
             }
         };
 
+        GD.Print(JsonConvert.SerializeObject(scene, Formatting.Indented));
         return JsonConvert.SerializeObject(scene, Formatting.Indented);
     }
 }

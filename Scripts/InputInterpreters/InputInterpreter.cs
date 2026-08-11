@@ -3,13 +3,13 @@ using Godot;
 [GlobalClass]
 public partial class InputInterpreter : Resource
 {
-    public class Parameters
+    public virtual void HandleMovementInputs(PlayerInput.NavigationInput navigationInput, Player player, InputInterpreterParameters parameters)
     {
-        
     }
     
-    public virtual void HandleMovementInputs(PlayerInput.NavigationInput navigationInput, Player player)
+    public virtual Transform3D HandleCameraInputs(PlayerInput.NavigationInput navigationInput, Player player, InputInterpreterParameters parameters)
     {
+        return Transform3D.Identity;
     }
 
     public virtual int HandleSplits(Split[] splits, CharacterBody3D player)
@@ -26,4 +26,9 @@ public partial class InputInterpreter : Resource
         player.CharacterBody.GlobalPosition = clamped.newPosition;
         player.CharacterBody.Velocity = clamped.newVelocity;
     }
+}
+
+public class InputInterpreterParameters
+{
+    
 }

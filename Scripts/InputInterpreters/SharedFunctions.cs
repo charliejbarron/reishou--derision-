@@ -1,6 +1,39 @@
 using System.Collections.Generic;
 using Godot;
 
+internal static class GameFuncs
+{
+    internal static void DrawPlayerDebug(Transform3D transform3D, Player _player)
+    {
+        Vector3 pos = -transform3D.Basis.Z + transform3D.Origin;
+
+        float arrowLength = 0.2f;
+
+        var conf = DebugDraw3D.NewScopedConfig();
+        conf.SetThickness(0.005f);
+
+        DebugDraw3D.DrawRay(pos, Vector3.Up, arrowLength, Colors.MediumSpringGreen);
+        DebugDraw3D.DrawRay(pos, Vector3.Right, arrowLength, Colors.MediumVioletRed);
+        DebugDraw3D.DrawRay(pos, Vector3.Back, arrowLength, Colors.MediumPurple);
+                
+        conf.SetThickness(0.0075f);
+        Vector3 vel = _player.CharacterBody.Velocity / 20f;
+
+        if (vel.Length() > 5e-03f)
+        {
+            DebugDraw3D.DrawLine(pos, pos + vel, Colors.Red);
+        }
+
+        conf.Dispose();
+
+        Vector3 head = _player.CharacterBody.GlobalPosition + new Vector3(0, GameSettings.CameraOffset, 0);
+        float dist = _player.Camera.GlobalPosition.DistanceTo(head);
+
+        if (dist > 1f)
+            DebugDraw3D.DrawPoints(new[] { head, _player.CharacterBody.GlobalPosition }, DebugDraw3D.PointType.TypeSquare, 0.2f, Colors.Chartreuse);
+    }
+}
+
 internal static class Interpreter
 {
     internal static Vector3 HandleSteps(Player player, Vector3 input)
@@ -53,7 +86,7 @@ internal static class Interpreter
         return dashVars.DashDir * GameSettings.DashForce * GameManager.Delta * dashVars.DashCooldown;
     }
 
-    internal static float GetSprint(Vector2 moveInput, bool sprintInput)
+    internal static float GetSprint(Vector2 moveInput, float speed, bool sprintInput)
     {
         SharedVariables.SprintVariables sprintVars = SharedVariables.SprintVars;
 
@@ -178,6 +211,14 @@ internal static class Interpreter
     {
         Basis degBasis = Basis.FromEuler(input * (Mathf.Pi / 180));
         return degBasis;
+    }
+
+    internal static Vector2 CalcCameraInputs(PlayerInput.CameraInput camera, bool fp = false)
+    {
+        Vector2 input = camera.Controller * (fp ? PlayerSettings.PlayerInput.ControllerSensitivityReductionFp : 1);
+        input += camera.Mouse * (fp ? PlayerSettings.PlayerInput.MouseSensitivityReductionFp : 1);
+
+        return input;
     }
 }
 
@@ -362,10 +403,10 @@ public static class SplitsFuncs
             DebugDraw3D.DrawLine(blocker.Position - widthOffset, blocker.Position - widthOffset + heightOffset, widthCol);
             DebugDraw3D.DrawLine(blocker.Position + widthOffset, blocker.Position + widthOffset + heightOffset, widthCol);
 
-            DebugDraw3D.DrawArrowRay(blocker.Position + widthOffset, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow, 0.2f);
-            DebugDraw3D.DrawArrowRay(blocker.Position - widthOffset, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow, 0.2f);
-            DebugDraw3D.DrawArrowRay(blocker.Position + widthOffset + heightOffset, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow, 0.2f);
-            DebugDraw3D.DrawArrowRay(blocker.Position - widthOffset + heightOffset, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow, 0.2f);
+            DebugDraw3D.DrawRay(blocker.Position + widthOffset, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow);
+            DebugDraw3D.DrawRay(blocker.Position - widthOffset, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow);
+            DebugDraw3D.DrawRay(blocker.Position + widthOffset + heightOffset, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow);
+            DebugDraw3D.DrawRay(blocker.Position - widthOffset + heightOffset, -new Vector3(blocker.Direction.X, 0, blocker.Direction.Y), 1f, blockerColArrow);
         }
     }
 }

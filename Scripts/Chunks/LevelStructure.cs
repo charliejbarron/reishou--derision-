@@ -1,5 +1,6 @@
 using Godot;
-
+using Newtonsoft.Json;
+using JsonSubTypes;
 public class Scene
 {
     public int StartingChunk = 0;
@@ -28,10 +29,11 @@ public struct Split
     public int Connected;
 }
 
+[JsonConverter(typeof(JsonSubtypes), "TypeName")]
 public class SceneInterpreter
 {
     public string TypeName;
-    public InputInterpreter.Parameters[] Parameters;
+    public string ParametersJson;
 }
 
 public class GameEvents

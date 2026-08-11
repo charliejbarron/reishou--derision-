@@ -6,6 +6,7 @@
     <RootNamespace>ReishouDerision</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="JsonSubTypes" Version="2.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
   </ItemGroup>
 </Project>
