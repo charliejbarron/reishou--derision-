@@ -23,7 +23,7 @@ public partial class GameManager : Node
     public override void _PhysicsProcess(double delta)
     {
         Delta = (float)delta;
-        _input.NavigationInputs = _inputManager.CollectMovementInputs();
+        _input.NavigationInputs.MovementInputs = _inputManager.CollectMovementInputs();
 
         _levelNavigationManager.HandleNavigation(_input.NavigationInputs);
     }

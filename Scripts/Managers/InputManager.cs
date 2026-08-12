@@ -6,14 +6,7 @@ public partial class InputManager : Node
     Vector2 _mouseInput;
     float _sprintTimer;
     bool _scheduleDash;
-    
-    public PlayerInput.NavigationInput CollectMovementInputs()
-    {
-        PlayerInput.NavigationInput movementInput = GetMovement();
 
-        return movementInput;
-    }
-    
     public PlayerInput.CameraInput CollectCameraInputs(float delta)
     {
         Vector2 controllerInput = new Vector2(Input.GetAxis("Camera-Left", "Camera-Right"), -Input.GetAxis("Camera-Down", "Camera-Up"));
@@ -31,8 +24,8 @@ public partial class InputManager : Node
 
         return input;
     }
-    
-    PlayerInput.NavigationInput GetMovement()
+
+    public PlayerInput.MovementInput CollectMovementInputs()
     {
         Vector2 MovementInput()
         {
@@ -64,21 +57,18 @@ public partial class InputManager : Node
         {
             return Input.IsActionPressed("Dash") || Input.IsActionPressed("Sprint");
         }
-        
-        PlayerInput.NavigationInput navigationInput = new()
+
+        PlayerInput.MovementInput movementInput = new()
         {
-            MovementInputs = new ()
-            {
-                Movement = MovementInput(),
-                Jump = JumpInput(),
-                Dash = DashInput(),
-                Sprint = SprintInput()
-            }
+            Movement = MovementInput(),
+            Jump = JumpInput(),
+            Dash = DashInput(),
+            Sprint = SprintInput()
         };
 
-        return navigationInput;
+        return movementInput;
     }
-    
+
     public override void _UnhandledInput(InputEvent @event)
     {
         if (@event is InputEventMouseMotion inputEvent)
@@ -100,7 +90,7 @@ public struct PlayerInput
 {
     public NavigationInput NavigationInputs;
     public CombatInput CombatInputs;
-    
+
     public struct NavigationInput
     {
         public MovementInput MovementInputs;
@@ -114,7 +104,7 @@ public struct PlayerInput
         public bool Dash;
         public bool Sprint;
     }
-    
+
     public struct CameraInput
     {
         public Vector2 Mouse;

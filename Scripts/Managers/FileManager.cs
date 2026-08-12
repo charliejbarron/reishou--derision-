@@ -111,15 +111,15 @@ public static class FileManager
                 new SceneInterpreter
                 {
                     TypeName = "QuakeInterpreter",
-                    ParametersJson = JsonConvert.SerializeObject(
-                        new InputInterpreterParameters[]
-                        {
-                            new QuakeInterpreterParameters
-                            {
-                                SensitivityMult = new Vector2(1f, 0.5f)
-                            }
-                        }
-                    )
+                    // ParametersJson = JsonConvert.SerializeObject(
+                    //     new InputInterpreterParameters[]
+                    //     {
+                    //         new QuakeInterpreterParameters
+                    //         {
+                    //             SensitivityMult = new Vector2(1f, 0.5f)
+                    //         }
+                    //     }
+                    // )
                 },
                 new SceneInterpreter
                 {
@@ -131,8 +131,8 @@ public static class FileManager
                             new NieRInterpreterParameters
                             {
                                 CameraOffset = new Vector3(0, 0.2f, 10f),
-                                CameraAutoRotation = 0.3f,
-                                MaxPitchAngles = new Vector2(-45f, 10f)
+                                CameraAutoRotation = 2f,
+                                MaxPitchAngles = new Vector2(-45f, -45f)
                             }
                         }
                     )
