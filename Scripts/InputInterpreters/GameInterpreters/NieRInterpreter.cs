@@ -39,9 +39,10 @@ public partial class NieRInterpreter : QuakeInterpreter
     {
         NieRInterpreterParameters nierParameters = parameters as NieRInterpreterParameters ?? new NieRInterpreterParameters();
         
-        Transform3D HandleCamera(Vector2 cameraInput, Node3D camera, Vector3 bodyPosition)
+        Transform3D HandleCamera(Vector2 cameraInput, Node3D camera, Vector3 bodyPosition, float cameraRot)
         {
-            Basis newBasis = Interpreter.InputBasis(Mathf.Clamp(camera.RotationDegrees.X - cameraInput.Y, -90f, 90f), camera.RotationDegrees.Y - cameraInput.X, 0);
+            float autoX = cameraRot * nierParameters.CameraAutoRotation;
+            Basis newBasis = Interpreter.InputBasis(Mathf.Clamp(camera.RotationDegrees.X - cameraInput.Y, -90f, 90f), camera.RotationDegrees.Y - cameraInput.X - autoX, 0);
             
             Transform3D transform = new Transform3D
             {
@@ -52,11 +53,12 @@ public partial class NieRInterpreter : QuakeInterpreter
             return transform;
         }
         
-        return HandleCamera(Interpreter.CalcCameraInputs(navigationInput.CameraInputs), player.Camera, interpolated);
+        return HandleCamera(Interpreter.CalcCameraInputs(navigationInput.CameraInputs), player.Camera, interpolated, navigationInput.MovementInputs.Movement.X * 0.1f);
     }
 }
 
 public class NieRInterpreterParameters : InputInterpreterParameters
 {
-    public Vector3 CameraOffset = new (0, 0.2f, 6f);
+    public Vector3 CameraOffset = new (0, -0.1f, 2.5f);
+    public float CameraAutoRotation = 1f;
 }

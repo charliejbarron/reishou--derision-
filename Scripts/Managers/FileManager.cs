@@ -127,13 +127,11 @@ public static class FileManager
                     ParametersJson = JsonConvert.SerializeObject(
                         new InputInterpreterParameters[]
                         {
+                            new NieRInterpreterParameters(),
                             new NieRInterpreterParameters
                             {
-                                CameraOffset = new Vector3(0, 0.2f, 10f)
-                            },
-                            new NieRInterpreterParameters
-                            {
-                                CameraOffset = new Vector3(0, 0.2f, 5f)
+                                CameraOffset = new Vector3(0, 0.2f, 10f),
+                                CameraAutoRotation = 0.3f
                             }
                         }
                     )
@@ -145,7 +143,7 @@ public static class FileManager
                 {
                     Name = "Start Room",
                     SpawnPoint = Vector3.Zero,
-                    Interpreter = 0,
+                    Interpreter = 1,
                     VisibleChunks = [1],
                     Splits =
                     [
@@ -207,6 +205,7 @@ public static class FileManager
                     Name = "Corridor",
                     SpawnPoint = new Vector3(21, 0, 0),
                     Interpreter = 1,
+                    Parameters = 1,
                     VisibleChunks = [2, 0],
                     Splits =
                     [
@@ -232,7 +231,7 @@ public static class FileManager
                     Name = "CorridorEnd",
                     SpawnPoint = new Vector3(40, 0, 1.5f),
                     Interpreter = 1,
-                    Parameters = 1,
+                    Parameters = 0,
                     VisibleChunks = [1, 2],
                     Splits =
                     [

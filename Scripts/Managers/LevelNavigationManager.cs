@@ -7,11 +7,12 @@ public partial class LevelNavigationManager : Node
     Player _player;
 
     // - - Level - -
-    // Chunks
     int _currentChunk;
+    ChunkInfo _info;
+    
+    // Data
     Chunk[] _chunks;
-
-    //Interpreters
+    
     InputInterpreter[] _loadedInterpreters;
     InputInterpreterParameters[][] _loadedParameters;
 
@@ -54,12 +55,10 @@ public partial class LevelNavigationManager : Node
 
     public void HandleNavigation(PlayerInput.NavigationInput inputs)
     {
-        var current = GetChunkInfo(_currentChunk);
+        _info = GetChunkInfo(_currentChunk);
+        
         void SwitchChunk(int chunk)
         {
-            if (chunk == -1)
-                return;
-
             // _chunks[_currentChunk].Events.OnExit();
             _currentChunk = _chunks[_currentChunk].VisibleChunks[chunk];
             // _chunks[_currentChunk].Events.OnEnter();
@@ -67,10 +66,13 @@ public partial class LevelNavigationManager : Node
             GD.Print("Switch to: " + _chunks[_currentChunk].Name + ", With: " + _loadedInterpreters[_chunks[_currentChunk].Interpreter].GetType().Name);
         }
 
-        current.interpreter.HandleMovementInputs(inputs, _player, current.parameters);
+        _info.Interpreter.HandleMovementInputs(inputs, _player, _info.Parameter);
 
-        current.interpreter.HandleBlockers(current.blockers, _player);
-        SwitchChunk(current.interpreter.HandleSplits(current.splits, _player.CharacterBody));
+        _info.Interpreter.HandleBlockers(_info.Blockers, _player);
+        int chunk = _info.Interpreter.CheckSplits(_info.Splits, _player.CharacterBody);
+        
+        if (chunk != -1)
+            SwitchChunk(chunk);
     }
 
     public void HandleCamera(PlayerInput.NavigationInput inputs)
@@ -87,22 +89,25 @@ public partial class LevelNavigationManager : Node
             Debugging.DrawDebugAxis(transform3D, _player);
         }
         
-        _player.Camera.GlobalTransform = _loadedInterpreters[_chunks[_currentChunk].Interpreter].HandleCameraInputs(inputs, _player, interpolated, _loadedParameters[_chunks[_currentChunk].Interpreter][_chunks[_currentChunk].Parameters]);
+        _player.Camera.GlobalTransform = _info.Interpreter.HandleCameraInputs(inputs, _player, interpolated, _info.Parameter);
         
         if (PlayerSettings.Misc.DrawDebug)
             Debug(_player.Camera.GlobalTransform);
     }
 
-    (InputInterpreter interpreter, InputInterpreterParameters parameters, Split[] splits, Split[] blockers) GetChunkInfo(int chunkInd)
+    ChunkInfo GetChunkInfo(int chunkInd)
     {
         Chunk current = _chunks[chunkInd];
-        InputInterpreter currentInterpreter = _loadedInterpreters[current.Interpreter];
-        InputInterpreterParameters currentParameters = _loadedParameters[current.Interpreter][current.Parameters];
+        
+        ChunkInfo info = new ChunkInfo
+        {
+            Interpreter = _loadedInterpreters[current.Interpreter],
+            Parameter = _loadedParameters[current.Interpreter][current.Parameters],
+            Splits = current.Splits,
+            Blockers = current.Blockers
+        };
 
-        Split[] splits = current.Splits;
-        Split[] blockers = current.Blockers;
-
-        return (currentInterpreter, currentParameters, splits, blockers);
+        return info;
     }
 }
 
@@ -111,4 +116,12 @@ public class Player
     public CharacterBody3D CharacterBody;
     public RayCast3D CharacterStepCast;
     public Camera3D Camera;
+}
+
+public class ChunkInfo
+{
+    public  InputInterpreter Interpreter;
+    public  InputInterpreterParameters Parameter;
+    public  Split[] Splits;
+    public  Split[] Blockers;
 }

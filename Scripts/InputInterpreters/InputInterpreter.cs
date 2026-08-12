@@ -12,7 +12,7 @@ public partial class InputInterpreter : Resource
         return Transform3D.Identity;
     }
 
-    public virtual int HandleSplits(Split[] splits, CharacterBody3D player)
+    public virtual int CheckSplits(Split[] splits, CharacterBody3D player)
     {
         
         
