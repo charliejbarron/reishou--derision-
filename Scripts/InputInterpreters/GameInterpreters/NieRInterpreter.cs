@@ -15,7 +15,7 @@ public partial class NieRInterpreter : QuakeInterpreter
             body.Position += Interpreter.HandleSteps(player, velocities.inputVelocity);
 
             Vector3 dash = Interpreter.Dash(movementInput.Dash, floored, movementInput.Movement, player.CharacterBody.IsOnWall()) * forward;
-            bool canJump = Interpreter.CanJump(navigationInput.MovementInputs.Jump, floored, dash != Vector3.Zero);
+            bool canJump = Interpreter.CanJump(movementInput.Jump, floored, dash != Vector3.Zero);
 
             if (dash != Vector3.Zero)
                 return dash + new Vector3(0, Interpreter.Gravity(), 0);
@@ -35,7 +35,7 @@ public partial class NieRInterpreter : QuakeInterpreter
         player.CharacterBody.MoveAndSlide();
     }
     
-    public override Transform3D HandleCameraInputs(PlayerInput.NavigationInput navigationInput, Player player, InputInterpreterParameters parameters)
+    public override Transform3D HandleCameraInputs(PlayerInput.NavigationInput navigationInput, Player player, Vector3 interpolated, InputInterpreterParameters parameters)
     {
         NieRInterpreterParameters nierParameters = parameters as NieRInterpreterParameters ?? new NieRInterpreterParameters();
         
@@ -52,7 +52,7 @@ public partial class NieRInterpreter : QuakeInterpreter
             return transform;
         }
         
-        return HandleCamera(Interpreter.CalcCameraInputs(navigationInput.CameraInputs), player.Camera, player.CharacterBody.GlobalPosition);
+        return HandleCamera(Interpreter.CalcCameraInputs(navigationInput.CameraInputs), player.Camera, interpolated);
     }
 }
 

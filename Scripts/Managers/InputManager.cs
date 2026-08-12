@@ -9,12 +9,37 @@ public partial class InputManager : Node
     
     public PlayerInput.NavigationInput CollectMovementInputs()
     {
-        PlayerInput.NavigationInput movementInput = CollectMovement();
+        PlayerInput.NavigationInput movementInput = GetMovement();
 
         return movementInput;
     }
     
-    PlayerInput.NavigationInput CollectMovement()
+    public PlayerInput.CameraInput CollectCameraInputs()
+    {
+        PlayerInput.CameraInput cameraInput = GetCamera();
+
+        return cameraInput;
+    }
+    
+    PlayerInput.CameraInput GetCamera()
+    {
+        Vector2 controllerInput = new Vector2(Input.GetAxis("Camera-Left", "Camera-Right"), -Input.GetAxis("Camera-Down", "Camera-Up"));
+
+        Vector2 mouseInput = _mouseInput * PlayerSettings.PlayerInput.MouseSensitivity * 0.01f;
+        controllerInput *= PlayerSettings.PlayerInput.ControllerSensitivity * 15f * GameManager.Delta;
+
+        _mouseInput = Vector2.Zero;
+
+        PlayerInput.CameraInput input = new()
+        {
+            Mouse = mouseInput,
+            Controller = controllerInput
+        };
+
+        return input;
+    }
+    
+    PlayerInput.NavigationInput GetMovement()
     {
         Vector2 MovementInput()
         {
@@ -46,24 +71,6 @@ public partial class InputManager : Node
         {
             return Input.IsActionPressed("Dash") || Input.IsActionPressed("Sprint");
         }
-
-        PlayerInput.CameraInput GetCameraInput(Vector2 mouseSens, Vector2 controllerSens)
-        {
-            Vector2 controllerInput = new Vector2(Input.GetAxis("Camera-Left", "Camera-Right"), -Input.GetAxis("Camera-Down", "Camera-Up"));
-
-            Vector2 mouseInput = _mouseInput * mouseSens * 0.01f;
-            controllerInput *= controllerSens * 15f * GameManager.Delta;
-
-            _mouseInput = Vector2.Zero;
-
-            PlayerInput.CameraInput input = new()
-            {
-                Mouse = mouseInput,
-                Controller = controllerInput
-            };
-
-            return input;
-        }
         
         PlayerInput.NavigationInput navigationInput = new()
         {
@@ -74,7 +81,7 @@ public partial class InputManager : Node
                 Dash = DashInput(),
                 Sprint = SprintInput()
             },
-            CameraInputs = GetCameraInput(PlayerSettings.PlayerInput.MouseSensitivity, PlayerSettings.PlayerInput.ControllerSensitivity)
+            CameraInputs = GetCamera()
         };
 
         return navigationInput;

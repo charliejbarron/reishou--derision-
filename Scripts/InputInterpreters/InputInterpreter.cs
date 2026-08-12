@@ -7,7 +7,7 @@ public partial class InputInterpreter : Resource
     {
     }
     
-    public virtual Transform3D HandleCameraInputs(PlayerInput.NavigationInput navigationInput, Player player, InputInterpreterParameters parameters)
+    public virtual Transform3D HandleCameraInputs(PlayerInput.NavigationInput navigationInput, Player player, Vector3 interpolated, InputInterpreterParameters parameters)
     {
         return Transform3D.Identity;
     }

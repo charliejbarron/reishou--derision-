@@ -7,6 +7,8 @@ public partial class GameManager : Node
     
     InputManager _inputManager;
     LevelNavigationManager _levelNavigationManager;
+
+    PlayerInput _input;
     
     public override void _Ready()
     {
@@ -21,8 +23,15 @@ public partial class GameManager : Node
     public override void _PhysicsProcess(double delta)
     {
         Delta = (float)delta;
-        PlayerInput.NavigationInput input = _inputManager.CollectMovementInputs();
+        _input.NavigationInputs = _inputManager.CollectMovementInputs();
 
-        _levelNavigationManager.HandleNavigation(input);
+        _levelNavigationManager.HandleNavigation(_input.NavigationInputs);
+    }
+
+    public override void _Process(double delta)
+    {
+        _input.NavigationInputs.CameraInputs = _inputManager.CollectCameraInputs();
+        
+        _levelNavigationManager.HandleCamera(_input.NavigationInputs);
     }
 }
