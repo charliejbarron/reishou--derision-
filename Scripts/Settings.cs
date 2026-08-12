@@ -12,7 +12,7 @@ static class PlayerSettings
         internal static float MouseSensitivityReductionFp = 0.8f;
         
         internal static Vector2 ControllerSensitivity = new(7f, 4f);
-        internal static float ControllerSensitivityReductionFp = 1.75f;
+        internal static float ControllerSensitivityReductionFp = 1.25f;
         
         
         internal static float HorizontalCameraTiltFp = 3f;

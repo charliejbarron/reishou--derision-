@@ -124,10 +124,10 @@ public static class FileManager
                 new SceneInterpreter
                 {
                     TypeName = "NieRInterpreter",
-                    ParametersJson = JsonConvert.SerializeObject(
+                    ParametersJson = JsonConvert.SerializeObject( // Serialize to string, loaded later dynamically
                         new InputInterpreterParameters[]
                         {
-                            new NieRInterpreterParameters(),
+                            new NieRInterpreterParameters(), // Blank parameters, NOT required or loaded by default
                             new NieRInterpreterParameters
                             {
                                 CameraOffset = new Vector3(0, 0.2f, 10f),

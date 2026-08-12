@@ -14,19 +14,12 @@ public partial class InputManager : Node
         return movementInput;
     }
     
-    public PlayerInput.CameraInput CollectCameraInputs()
-    {
-        PlayerInput.CameraInput cameraInput = GetCamera();
-
-        return cameraInput;
-    }
-    
-    PlayerInput.CameraInput GetCamera()
+    public PlayerInput.CameraInput CollectCameraInputs(float delta)
     {
         Vector2 controllerInput = new Vector2(Input.GetAxis("Camera-Left", "Camera-Right"), -Input.GetAxis("Camera-Down", "Camera-Up"));
 
         Vector2 mouseInput = _mouseInput * PlayerSettings.PlayerInput.MouseSensitivity * 0.01f;
-        controllerInput *= PlayerSettings.PlayerInput.ControllerSensitivity * 15f * GameManager.Delta;
+        controllerInput *= PlayerSettings.PlayerInput.ControllerSensitivity * 20f * delta;
 
         _mouseInput = Vector2.Zero;
 
@@ -80,8 +73,7 @@ public partial class InputManager : Node
                 Jump = JumpInput(),
                 Dash = DashInput(),
                 Sprint = SprintInput()
-            },
-            CameraInputs = GetCamera()
+            }
         };
 
         return navigationInput;

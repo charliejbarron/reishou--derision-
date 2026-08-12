@@ -30,7 +30,7 @@ public partial class GameManager : Node
 
     public override void _Process(double delta)
     {
-        _input.NavigationInputs.CameraInputs = _inputManager.CollectCameraInputs();
+        _input.NavigationInputs.CameraInputs = _inputManager.CollectCameraInputs((float)delta);
         
         _levelNavigationManager.HandleCamera(_input.NavigationInputs);
     }
