@@ -3,7 +3,7 @@ using Godot;
 [GlobalClass]
 public partial class NieRInterpreter : QuakeInterpreter
 {
-    public override void HandleMovementInputs(PlayerInput.NavigationInput navigationInput, Player player, InputInterpreterParameters parameters)
+    public override void HandleMovementInputs(PlayerInput.NavigationInput navigationInput, Player player, InputInterpreterParameters parameter)
     {
         bool floored = player.CharacterBody.IsOnFloor();
 
@@ -35,18 +35,18 @@ public partial class NieRInterpreter : QuakeInterpreter
         player.CharacterBody.MoveAndSlide();
     }
     
-    public override Transform3D HandleCameraInputs(PlayerInput.NavigationInput navigationInput, Player player, Vector3 interpolated, InputInterpreterParameters parameters)
+    public override Transform3D HandleCameraInputs(PlayerInput.NavigationInput navigationInput, Player player, Vector3 interpolated, InputInterpreterParameters inputParameters)
     {
-        NieRInterpreterParameters nierParameters = parameters as NieRInterpreterParameters ?? new NieRInterpreterParameters();
+        var parameters = GetParameter<NieRInterpreterParameters>(inputParameters);
         
         Transform3D HandleCamera(Vector2 cameraInput, Node3D camera, Vector3 bodyPosition, float cameraRot)
         {
-            float autoX = cameraRot * nierParameters.CameraAutoRotation;
-            Basis newBasis = Interpreter.InputBasis(Mathf.Clamp(camera.RotationDegrees.X - cameraInput.Y, -90f, 90f), camera.RotationDegrees.Y - cameraInput.X - autoX, 0);
+            float autoX = cameraRot * parameters.CameraAutoRotation;
+            Basis newBasis = Interpreter.InputBasis(Mathf.Clamp(camera.RotationDegrees.X - cameraInput.Y, parameters.MaxPitchAngles.X, parameters.MaxPitchAngles.Y), camera.RotationDegrees.Y - cameraInput.X - autoX, 0);
             
             Transform3D transform = new Transform3D
             {
-                Origin = bodyPosition + new Vector3(0, GameSettings.CameraOffset, 0) + newBasis * nierParameters.CameraOffset,
+                Origin = bodyPosition + new Vector3(0, GameSettings.CameraOffset, 0) + newBasis * parameters.CameraOffset,
                 Basis = newBasis
             };
             
@@ -57,7 +57,7 @@ public partial class NieRInterpreter : QuakeInterpreter
     }
 }
 
-public class NieRInterpreterParameters : InputInterpreterParameters
+public class NieRInterpreterParameters : QuakeInterpreterParameters
 {
     public Vector3 CameraOffset = new (0, -0.1f, 2.5f);
     public float CameraAutoRotation = 1f;

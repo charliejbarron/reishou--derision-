@@ -121,7 +121,7 @@ public class Player
 public class ChunkInfo
 {
     public  InputInterpreter Interpreter;
-    public  InputInterpreterParameters Parameter;
+    public  InputInterpreterParameters? Parameter;
     public  Split[] Splits;
     public  Split[] Blockers;
 }

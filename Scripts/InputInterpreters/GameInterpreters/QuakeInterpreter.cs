@@ -3,7 +3,7 @@ using Godot;
 [GlobalClass]
 public partial class QuakeInterpreter : InputInterpreter
 {
-    public override void HandleMovementInputs(PlayerInput.NavigationInput navigationInput, Player player, InputInterpreterParameters parameters)
+    public override void HandleMovementInputs(PlayerInput.NavigationInput navigationInput, Player player, InputInterpreterParameters parameter)
     {
         bool floored = player.CharacterBody.IsOnFloor();
 
@@ -36,17 +36,20 @@ public partial class QuakeInterpreter : InputInterpreter
         player.CharacterBody.MoveAndSlide();
     }
 
-    public override Transform3D HandleCameraInputs(PlayerInput.NavigationInput navigationInput, Player player, Vector3 interpolated,  InputInterpreterParameters parameters)
+    public override Transform3D HandleCameraInputs(PlayerInput.NavigationInput navigationInput, Player player, Vector3 interpolated,  InputInterpreterParameters? inputParameters)
     {
+        var parameters = GetParameter<QuakeInterpreterParameters>(inputParameters);
+        
         Transform3D HandleCamera(Vector2 cameraInput, Node3D camera, Vector3 bodyPosition, float xInput)
         {
             float roll = float.Lerp(camera.RotationDegrees.Z, -PlayerSettings.PlayerInput.HorizontalCameraTiltFp * xInput,
                 GameManager.Delta * PlayerSettings.PlayerInput.HorizontalCameraTiltSpeedFp);
+            cameraInput *= parameters.SensitivityMult;
 
             Transform3D transform = new Transform3D
             {
                 Origin = bodyPosition + new Vector3(0, GameSettings.CameraOffset, 0),
-                Basis = Interpreter.InputBasis(Mathf.Clamp(camera.RotationDegrees.X - cameraInput.Y, -90f, 90f), camera.RotationDegrees.Y - cameraInput.X, roll)
+                Basis = Interpreter.InputBasis(Mathf.Clamp(camera.RotationDegrees.X - cameraInput.Y, parameters.MaxPitchAngles.X, parameters.MaxPitchAngles.Y), camera.RotationDegrees.Y - cameraInput.X, roll)
             };
             
             return transform;
@@ -54,4 +57,10 @@ public partial class QuakeInterpreter : InputInterpreter
         
         return HandleCamera(Interpreter.CalcCameraInputs(navigationInput.CameraInputs, true), player.Camera, interpolated, navigationInput.MovementInputs.Movement.X);
     }
+}
+
+public class QuakeInterpreterParameters : InputInterpreterParameters
+{
+    public Vector2 SensitivityMult = Vector2.One;
+    public Vector2 MaxPitchAngles = new Vector2(-90f, 90f);
 }

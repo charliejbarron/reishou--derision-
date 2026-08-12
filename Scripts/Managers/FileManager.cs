@@ -53,7 +53,7 @@ public static class FileManager
                 chunks[index].Splits = chunks[index].Splits == null ? new[] { inverseSplit } : chunks[index].Splits.Append(inverseSplit).ToArray();
             }
         }
-        
+
         return chunks;
     }
 
@@ -87,23 +87,14 @@ public static class FileManager
             {
                 Type type = Type.GetType(scene.Interpreters[p].TypeName + "Parameters");
 
-                GD.Print(type);
-                
-                if (type != null)
+                if (type != null && scene.Interpreters[p].ParametersJson != null)
                 {
                     parameters[p] = (InputInterpreterParameters[])JsonConvert.DeserializeObject(scene.Interpreters[p].ParametersJson, type.MakeArrayType());
-                    // https://stackoverflow.com/questions/42736347/newtonsoft-json-deserialization-into-specific-types
-                    
                     continue;
                 }
             }
 
-            parameters[p] = new InputInterpreterParameters[] { new () };
-        }
-
-        foreach (var VARIABLE in parameters)
-        {
-            GD.Print(VARIABLE[0].GetType());
+            parameters[p] = new InputInterpreterParameters[] { new() };
         }
 
         return parameters;
@@ -119,7 +110,16 @@ public static class FileManager
             [
                 new SceneInterpreter
                 {
-                    TypeName = "QuakeInterpreter"
+                    TypeName = "QuakeInterpreter",
+                    ParametersJson = JsonConvert.SerializeObject(
+                        new InputInterpreterParameters[]
+                        {
+                            new QuakeInterpreterParameters
+                            {
+                                SensitivityMult = new Vector2(1f, 0.5f)
+                            }
+                        }
+                    )
                 },
                 new SceneInterpreter
                 {
@@ -131,7 +131,8 @@ public static class FileManager
                             new NieRInterpreterParameters
                             {
                                 CameraOffset = new Vector3(0, 0.2f, 10f),
-                                CameraAutoRotation = 0.3f
+                                CameraAutoRotation = 0.3f,
+                                MaxPitchAngles = new Vector2(-45f, 10f)
                             }
                         }
                     )
