@@ -44,7 +44,9 @@ static class GameSettings
     internal const float Friction = 0.9f;
     internal const float Control = 0.2f;
 
-    internal const float StepUpHeight = 0.21f;
+    internal const float StepUpHeight = 0.45f;
+    internal const float StepDownHeight = 0.1f;
+    internal const float PlayerHeight = 1.77f;
     internal const float CameraOffset = 1.57f;
 
     internal static readonly string[] BuiltinInterpreters =

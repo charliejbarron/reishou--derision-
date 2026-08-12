@@ -1,23 +1,28 @@
-using System;
 using System.Collections.Generic;
 using Godot;
 
 internal static class Interpreter
 {
-    internal static Vector3 HandleSteps(Player player, Vector3 input)
+    internal static T ConvertParameters<T>(InputInterpreterParameters parameter) where T : InputInterpreterParameters, new()
     {
-        if (input == Vector3.Zero || !player.CharacterBody.IsOnFloor() || !player.CharacterBody.IsOnWall() || player.CharacterBody.Velocity.Y > 0f)
-            return Vector3.Zero;
+        T param = parameter as T ?? new T();
 
-        player.CharacterStepCast.Position = new Vector3(input.X * 0.21f, GameSettings.StepUpHeight, input.Z * 0.21f);
-        player.CharacterStepCast.ForceRaycastUpdate();
+        return param;
+    }
 
-        if (!player.CharacterStepCast.IsColliding())
-            return Vector3.Zero;
+    internal static float HandleSteps(Player player)
+    {
+        player.CharacterFloorCast.ForceShapecastUpdate();
 
-        Vector3 point = player.CharacterBody.ToLocal(player.CharacterStepCast.GetCollisionPoint()) * new Vector3(0.1f, 1f, 0.1f);
+        if (!player.CharacterFloorCast.IsColliding())
+            return 0;
 
-        return point.Y < 1e-08f ? Vector3.Zero : point;
+        float offset = (1 - player.CharacterFloorCast.GetClosestCollisionSafeFraction()) * (GameSettings.StepUpHeight + GameSettings.StepDownHeight) - GameSettings.StepDownHeight;
+        
+        if (player.CharacterBody.Velocity.Y > 0f && offset <= 0f)
+            return 0;
+        
+        return offset;
     }
 
     internal static Vector3 Dash(bool dash, bool floored, Vector2 moveInput, bool isOnWall)

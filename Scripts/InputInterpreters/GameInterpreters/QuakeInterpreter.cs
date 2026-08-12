@@ -12,7 +12,8 @@ public partial class QuakeInterpreter : InputInterpreter
             float moveSpeed = Interpreter.GetSprint(movementInput.Movement, body.Velocity.Length(), movementInput.Sprint) > 0f && floored ? GameSettings.MaxSprintSpeed : GameSettings.MaxWalkSpeed;
             var velocities = Interpreter.CalculateInput(movementInput.Movement, forward, body.Velocity, floored);
 
-            body.Position += Interpreter.HandleSteps(player, velocities.inputVelocity);
+            float step = Interpreter.HandleSteps(player);
+            body.Position += Vector3.Up * step;
 
             Vector3 dash = Interpreter.Dash(movementInput.Dash, floored, movementInput.Movement, player.CharacterBody.IsOnWall()) * forward;
             bool canJump = Interpreter.CanJump(movementInput.Jump, floored, dash != Vector3.Zero);
@@ -23,7 +24,7 @@ public partial class QuakeInterpreter : InputInterpreter
             float friction = Interpreter.CalculateFriction(floored, velocities.newVelocity, moveSpeed, movementInput.Movement.Length(), player.CharacterBody.IsOnWall());
             float speed = Interpreter.CalculateSpeed(velocities.oldVelocity.Length(), moveSpeed, velocities.newVelocity.Length(), friction);
 
-            Vector3 finalVelocity = Interpreter.MovementVelocity(velocities.newVelocity, speed, body.Velocity.Y + Interpreter.Gravity());
+            Vector3 finalVelocity = Interpreter.MovementVelocity(velocities.newVelocity, speed, step != 0 ? 0 : body.Velocity.Y + Interpreter.Gravity());
 
             if (canJump)
                 finalVelocity = Interpreter.Jump(finalVelocity, velocities.inputVelocity);
@@ -38,7 +39,7 @@ public partial class QuakeInterpreter : InputInterpreter
 
     public override Transform3D HandleCameraInputs(PlayerInput.NavigationInput navigationInput, Player player, Vector3 interpolated,  InputInterpreterParameters? inputParameters)
     {
-        var parameters = GetParameter<QuakeInterpreterParameters>(inputParameters);
+        var parameters = Interpreter.ConvertParameters<QuakeInterpreterParameters>(inputParameters);
         
         Transform3D HandleCamera(Vector2 cameraInput, Node3D camera, Vector3 bodyPosition, float xInput)
         {

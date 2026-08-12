@@ -5,14 +5,14 @@ public partial class NieRInterpreter : QuakeInterpreter
 {
     public override void HandleMovementInputs(PlayerInput.NavigationInput navigationInput, Player player, InputInterpreterParameters parameter)
     {
-        bool floored = player.CharacterBody.IsOnFloor();
+        float step = Interpreter.HandleSteps(player);
+        player.CharacterBody.Position += Vector3.Up * step;
+        bool floored = step != 0;
 
         Vector3 HandleMovement(PlayerInput.MovementInput movementInput, CharacterBody3D body, Basis forward)
         {
             float moveSpeed = Interpreter.GetSprint(movementInput.Movement,  body.Velocity.Length(), movementInput.Sprint) > 0f && floored ? GameSettings.MaxSprintSpeed : GameSettings.MaxWalkSpeed;
             var velocities = Interpreter.CalculateInput(movementInput.Movement, forward, body.Velocity, floored);
-
-            body.Position += Interpreter.HandleSteps(player, velocities.inputVelocity);
 
             Vector3 dash = Interpreter.Dash(movementInput.Dash, floored, movementInput.Movement, player.CharacterBody.IsOnWall()) * forward;
             bool canJump = Interpreter.CanJump(movementInput.Jump, floored, dash != Vector3.Zero);
@@ -23,7 +23,7 @@ public partial class NieRInterpreter : QuakeInterpreter
             float friction = Interpreter.CalculateFriction(floored, velocities.newVelocity, moveSpeed, movementInput.Movement.Length(), player.CharacterBody.IsOnWall());
             float speed = Interpreter.CalculateSpeed(velocities.oldVelocity.Length(), moveSpeed, velocities.newVelocity.Length(), friction);
 
-            Vector3 finalVelocity = Interpreter.MovementVelocity(velocities.newVelocity, speed, body.Velocity.Y + Interpreter.Gravity());
+            Vector3 finalVelocity = Interpreter.MovementVelocity(velocities.newVelocity, speed, floored ? 0 : body.Velocity.Y + Interpreter.Gravity());
 
             if (canJump)
                 finalVelocity = Interpreter.Jump(finalVelocity, velocities.inputVelocity);
@@ -37,7 +37,7 @@ public partial class NieRInterpreter : QuakeInterpreter
     
     public override Transform3D HandleCameraInputs(PlayerInput.NavigationInput navigationInput, Player player, Vector3 interpolated, InputInterpreterParameters inputParameters)
     {
-        var parameters = GetParameter<NieRInterpreterParameters>(inputParameters);
+        var parameters = Interpreter.ConvertParameters<NieRInterpreterParameters>(inputParameters);
         
         Transform3D HandleCamera(Vector2 cameraInput, Node3D camera, Vector3 bodyPosition, float cameraRot)
         {

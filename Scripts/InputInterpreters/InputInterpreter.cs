@@ -26,13 +26,6 @@ public partial class InputInterpreter : Resource
         player.CharacterBody.GlobalPosition = clamped.newPosition;
         player.CharacterBody.Velocity = clamped.newVelocity;
     }
-    
-    internal static T GetParameter<T>(InputInterpreterParameters parameter) where T : InputInterpreterParameters, new()
-    {
-        T param = parameter as T ?? new T();
-
-        return param;
-    }
 }
 
 public class InputInterpreterParameters

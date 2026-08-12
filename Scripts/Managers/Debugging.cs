@@ -1,9 +1,17 @@
+using System.Globalization;
 using Godot;
 
 internal static class Debugging
 {
     static readonly Basis Cylinder = Basis.Identity.Scaled(new Vector3(0.2f, 1e-08f, 0.2f));
-    
+
+    internal static void HandleDebug(Transform3D transform3D, Vector3 interpolated, Player player, ChunkInfo info, Chunk[] connectedChunks)
+    {
+        DrawDebugSplits(info.Splits, connectedChunks);
+        DrawDebugBlockers(info.Blockers);
+        DrawPlayerDebug(transform3D, interpolated);
+        DrawDebugAxis(transform3D, player);
+    }
     internal static void DrawPlayerDebug(Transform3D transform3D, Vector3 interpolated)
     {
         Vector3 head = interpolated + new Vector3(0, GameSettings.CameraOffset, 0);
@@ -14,6 +22,8 @@ internal static class Debugging
         
         DebugDraw3D.DrawLine(head, interpolated, Colors.MediumVioletRed);
         DebugDraw3D.DrawCylinder(new Transform3D(Cylinder, interpolated), Colors.MediumSpringGreen);
+        DebugDraw3D.DrawCylinder(new Transform3D(Cylinder, interpolated + Vector3.Up * GameSettings.StepUpHeight), Colors.Chartreuse);
+        DebugDraw3D.DrawCylinder(new Transform3D(Cylinder, interpolated + Vector3.Down * GameSettings.StepDownHeight), Colors.Crimson);
     }
 
     internal static void DrawDebugAxis(Transform3D transform3D, Player player)
