@@ -28,7 +28,7 @@ public partial class LevelNavigationManager : Node
             _loadedParameters = scene.parametersArray;
             
             _info = GetChunkInfo(_currentChunk);
-
+            
             return _chunks[_currentChunk].SpawnPoint;
         }
 
@@ -72,9 +72,12 @@ public partial class LevelNavigationManager : Node
     {
         void SwitchChunk(int chunk)
         {
+            // if new interpreter OR different parameters'
+            // interpreter.Events.OnExit()
             // _chunks[_currentChunk].Events.OnExit();
             _currentChunk = _chunks[_currentChunk].VisibleChunks[chunk];
             // _chunks[_currentChunk].Events.OnEnter();
+            // interpreter.Events.OnEnter()
             
             _info = GetChunkInfo(_currentChunk);
             GD.Print("Switch to: " + _chunks[_currentChunk].Name + ", With: " + _loadedInterpreters[_chunks[_currentChunk].Interpreter].GetType().Name);

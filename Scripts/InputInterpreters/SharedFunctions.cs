@@ -10,19 +10,44 @@ internal static class Interpreter
         return param;
     }
 
-    internal static float HandleSteps(Player player)
+    internal static Vector3 HeadPosition(float yPos)
+    {
+        SharedVariables.CameraVariables vars = SharedVariables.CameraVars;
+        
+        Vector3 head = new Vector3(0, GameSettings.CameraOffset  - vars.StepOffset, 0);
+
+        float increase = Mathf.Max(1, vars.StepOffset);
+        
+        vars.StepOffset = float.Lerp(vars.StepOffset, 0, GameManager.Delta * GameSettings.CameraYSmoothing * increase);
+        
+        return head;
+    }
+
+    internal static bool HandleFloor(Player player)
     {
         player.CharacterFloorCast.ForceShapecastUpdate();
 
         if (!player.CharacterFloorCast.IsColliding())
-            return 0;
+            return false;
 
         float offset = (1 - player.CharacterFloorCast.GetClosestCollisionSafeFraction()) * (GameSettings.StepUpHeight + GameSettings.StepDownHeight) - GameSettings.StepDownHeight;
-        
+
+        // GD.Print(offset);
+
         if (player.CharacterBody.Velocity.Y > 0f && offset <= 0f)
-            return 0;
+            return false;
         
-        return offset;
+        player.CharacterBody.GlobalPosition += Vector3.Up * offset;
+        
+        if (Mathf.Abs(offset) > 3e-02f)
+        {
+            player.CharacterBody.ResetPhysicsInterpolation();
+            
+            SharedVariables.CameraVariables vars = SharedVariables.CameraVars;
+            vars.StepOffset += offset;
+        }
+
+        return true;
     }
 
     internal static Vector3 Dash(bool dash, bool floored, Vector2 moveInput, bool isOnWall)
@@ -160,9 +185,12 @@ internal static class Interpreter
         return new Vector3(newVelocity.X, yVelocity, newVelocity.Z);
     }
 
-    internal static float Gravity()
+    internal static float Gravity(bool floored, float yVel = 0f)
     {
-        return -9.8f * 2f * GameManager.Delta;
+        if (floored)
+            return 0;
+
+        return yVel + -9.8f * 2f * GameManager.Delta;
     }
 
     internal static (Vector3 inputVelocity, Vector3 oldVelocity, Vector3 newVelocity) CalculateInput(Vector2 input, Basis forward, Vector3 bodyVelocity, bool floored)
@@ -323,35 +351,5 @@ public static class SplitsFuncs
         }
 
         return chunks;
-    }
-}
-
-static class SharedVariables
-{
-    public static JumpVariables JumpVars = new();
-    public static SprintVariables SprintVars = new();
-    public static DashVariables DashVars = new();
-
-    public class JumpVariables
-    {
-        internal float AirTiming;
-        internal float JumpTiming;
-        internal bool DoubleJump;
-        internal bool ScheduleJump;
-    }
-
-    public class SprintVariables
-    {
-        internal float SprintTime;
-        internal float PaddingTime;
-    }
-
-    public class DashVariables
-    {
-        internal float DashCooldown;
-        internal float DashTimer;
-        internal Vector3 DashDir;
-        internal float ScheduleDash;
-        internal bool TouchedFloor;
     }
 }

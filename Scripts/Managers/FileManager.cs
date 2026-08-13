@@ -131,7 +131,7 @@ public static class FileManager
                             new NieRInterpreterParameters
                             {
                                 CameraOffset = new Vector3(0, 0.2f, 10f),
-                                CameraAutoRotation = 2f,
+                                CameraAutoRotation = 1.2f,
                                 MaxPitchAngles = new Vector2(-45f, -45f)
                             }
                         }
@@ -216,7 +216,7 @@ public static class FileManager
                             Direction = new Vector2(1, 0),
                             Height = 3,
                             Width = 2.5f,
-                            Position = new Vector3(25, 0, 0)
+                            Position = new Vector3(22, 0, 0)
                         }
                     ]
                 },
@@ -239,7 +239,7 @@ public static class FileManager
                         new()
                         {
                             Connected = 1,
-                            Direction = new Vector2(-1, 1),
+                            Direction = new Vector2(-1, 0),
                             Height = -5,
                             Width = 2.5f,
                             Position = new Vector3(35, 0, 0)

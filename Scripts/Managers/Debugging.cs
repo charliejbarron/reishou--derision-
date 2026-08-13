@@ -20,7 +20,7 @@ internal static class Debugging
         if (dist <= 1f) 
             return;
         
-        DebugDraw3D.DrawLine(head, interpolated, Colors.MediumVioletRed);
+        DebugDraw3D.DrawLine(head, interpolated, Colors.White);
         DebugDraw3D.DrawCylinder(new Transform3D(Cylinder, interpolated), Colors.MediumSpringGreen);
         DebugDraw3D.DrawCylinder(new Transform3D(Cylinder, interpolated + Vector3.Up * GameSettings.StepUpHeight), Colors.Chartreuse);
         DebugDraw3D.DrawCylinder(new Transform3D(Cylinder, interpolated + Vector3.Down * GameSettings.StepDownHeight), Colors.Crimson);
