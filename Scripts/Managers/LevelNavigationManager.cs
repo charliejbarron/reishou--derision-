@@ -17,22 +17,22 @@ public partial class LevelNavigationManager : Node
     InputInterpreterParameters[][] _loadedParameters;
 
 
-    public void Setup((Chunk[] chunks, int current, InputInterpreter[] interpreters, InputInterpreterParameters[][] parametersArray) scene)
+    public void LevelSetup((Chunk[] chunks, int current, InputInterpreter[] interpreters, InputInterpreterParameters[][] parametersArray) scene)
     {
-        Vector3 SetupScene()
+        Vector3 SetupScene() // Move to different script (Game Manager?)
         {
             _chunks = scene.chunks;
             _currentChunk = scene.current;
 
             _loadedInterpreters = scene.interpreters;
             _loadedParameters = scene.parametersArray;
-            
+
             _info = GetChunkInfo(_currentChunk);
-            
+
             return _chunks[_currentChunk].SpawnPoint;
         }
 
-        void SetupPlayer(Vector3 spawn)
+        void SetupPlayer(Vector3 spawn) // Move to different script (Game Manager?)
         {
             _player = new()
             {
@@ -50,7 +50,15 @@ public partial class LevelNavigationManager : Node
             _player.CharacterFloorCast = _player.CharacterBody.GetNode<ShapeCast3D>("FloorCast");
 
             _player.CharacterFloorCast.Position = Vector3.Up * (GameSettings.StepUpHeight + 0.1f);
-            _player.CharacterFloorCast.TargetPosition = -_player.CharacterFloorCast.Position + (Vector3.Down * GameSettings.StepDownHeight);
+            _player.CharacterFloorCast.TargetPosition = -_player.CharacterFloorCast.Position + Vector3.Down * GameSettings.StepDownHeight;
+
+            CylinderShape3D castShape = new()
+            {
+                Radius = 0.19f,
+                Height = 0.05f
+            };
+
+            _player.CharacterFloorCast.SetShape(castShape);
 
             CylinderShape3D shape = new()
             {
@@ -62,6 +70,13 @@ public partial class LevelNavigationManager : Node
 
             collider.Position = Vector3.Up * (GameSettings.PlayerHeight / 2f + GameSettings.StepUpHeight / 2f);
             collider.SetShape(shape);
+
+            // Slopes
+
+            _player.SlopeCast = _player.CharacterBody.GetNode<RayCast3D>("SlopeCast");
+
+            _player.SlopeCast.Position = Vector3.Up * (GameSettings.StepUpHeight + 0.1f);
+            _player.SlopeCast.TargetPosition = -_player.SlopeCast.Position * 2f;
         }
 
         Vector3 spawn = SetupScene();
@@ -78,7 +93,7 @@ public partial class LevelNavigationManager : Node
             _currentChunk = _chunks[_currentChunk].VisibleChunks[chunk];
             // _chunks[_currentChunk].Events.OnEnter();
             // interpreter.Events.OnEnter()
-            
+
             _info = GetChunkInfo(_currentChunk);
             GD.Print("Switch to: " + _chunks[_currentChunk].Name + ", With: " + _loadedInterpreters[_chunks[_currentChunk].Interpreter].GetType().Name);
         }
@@ -124,6 +139,7 @@ public class Player
 {
     public CharacterBody3D CharacterBody;
     public ShapeCast3D CharacterFloorCast;
+    public RayCast3D SlopeCast;
     public Camera3D Camera;
 }
 

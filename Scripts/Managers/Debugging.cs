@@ -1,4 +1,3 @@
-using System.Globalization;
 using Godot;
 
 internal static class Debugging

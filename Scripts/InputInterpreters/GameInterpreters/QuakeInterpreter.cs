@@ -45,7 +45,7 @@ public partial class QuakeInterpreter : InputInterpreter
 
             Transform3D transform = new Transform3D
             {
-                Origin = interpolated + Interpreter.HeadPosition(player.CharacterBody.GlobalPosition.Y),
+                Origin = interpolated + Interpreter.HeadPosition(),
                 Basis = Interpreter.InputBasis(Mathf.Clamp(camera.RotationDegrees.X - cameraInput.Y, parameters.MaxPitchAngles.X, parameters.MaxPitchAngles.Y), camera.RotationDegrees.Y - cameraInput.X, roll)
             };
             

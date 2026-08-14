@@ -44,7 +44,7 @@ public partial class NieRInterpreter : QuakeInterpreter
             
             Transform3D transform = new Transform3D
             {
-                Origin = interpolated + Interpreter.HeadPosition(player.CharacterBody.GlobalPosition.Y) + newBasis * parameters.CameraOffset,
+                Origin = interpolated + Interpreter.HeadPosition() + newBasis * parameters.CameraOffset,
                 Basis = newBasis
             };
 

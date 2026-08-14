@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://bpb8tvvcbotik" path="res://Scripts/Managers/InputManager.cs" id="2_p60qp"]
 [ext_resource type="PackedScene" uid="uid://g3mnouly0etm" path="res://Scenes/player.tscn" id="3_7efg0"]
 [ext_resource type="Script" uid="uid://c2cl8fk7qvsmm" path="res://Scripts/Managers/LevelNavigationManager.cs" id="3_p60qp"]
-[ext_resource type="LightmapGIData" uid="uid://30r3ku34hs10" path="res://Scenes/gameManager.lmbake" id="3_vm7x0"]
 [ext_resource type="PackedScene" uid="uid://dvqtd58hbqi1m" path="res://Scenes/camera.tscn" id="4_g4hsr"]
 [ext_resource type="Texture2D" uid="uid://c37jb5omdl14e" path="res://addons/kenney_prototype_textures/dark/texture_01.png" id="5_2crpj"]
 [ext_resource type="Texture2D" uid="uid://4htl18rlqvon" path="res://addons/kenney_prototype_textures/red/texture_02.png" id="6_p60qp"]
@@ -38,13 +37,13 @@ script = ExtResource("3_p60qp")
 metadata/_custom_type_script = "uid://c2cl8fk7qvsmm"
 
 [node name="Player" parent="LevelNavigationManager" unique_id=582331314 instance=ExtResource("3_7efg0")]
+floor_max_angle = 0.0
 
 [node name="Camera3D" parent="LevelNavigationManager" unique_id=1568685294 instance=ExtResource("4_g4hsr")]
 
 [node name="Test Zone" type="Node3D" parent="." unique_id=456067295]
 
 [node name="LightmapGI" type="LightmapGI" parent="Test Zone" unique_id=6551237]
-light_data = ExtResource("3_vm7x0")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="Test Zone/LightmapGI" unique_id=1129012160]
 transform = Transform3D(0.5256435, -0.33756095, 0.7808659, -0.1566021, 0.8638221, 0.47883952, -0.8361666, -0.37398413, 0.4011998, 0, 5.1911383, 0)
@@ -64,27 +63,34 @@ light_bake_mode = 1
 [node name="CSGCombiner3D" type="CSGCombiner3D" parent="Test Zone" unique_id=94135091]
 use_collision = true
 
-[node name="CSGBox3D" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=1723345269]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00028538704, 0.5042187, -0.0055150986)
-size = Vector3(32, 2, 32)
-material = SubResource("StandardMaterial3D_vm7x0")
+[node name="Rooms" type="CSGCombiner3D" parent="Test Zone/CSGCombiner3D" unique_id=18605893]
+metadata/_edit_lock_ = true
 
-[node name="CSGBox3D2" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=1648061374]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
-operation = 2
-size = Vector3(31, 3, 31)
-material = SubResource("StandardMaterial3D_vm7x0")
-
-[node name="CSGBox3D8" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=1345344012]
+[node name="CSGBox3D8" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Rooms" unique_id=1345344012]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.25, 1.25, 0)
 size = Vector3(35.5, 3.5, 5)
 material = SubResource("StandardMaterial3D_vm7x0")
+metadata/_edit_lock_ = true
 
-[node name="CSGBox3D7" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=741006937]
+[node name="CSGBox3D" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Rooms" unique_id=1723345269]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00028538704, 0.5042187, -0.0055150986)
+size = Vector3(32, 2, 32)
+material = SubResource("StandardMaterial3D_vm7x0")
+metadata/_edit_lock_ = true
+
+[node name="CSGBox3D7" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Rooms" unique_id=741006937]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 1.5, 0)
 operation = 2
 size = Vector3(35, 3, 4)
 material = SubResource("StandardMaterial3D_vm7x0")
+metadata/_edit_lock_ = true
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Rooms" unique_id=1648061374]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+operation = 2
+size = Vector3(31, 3, 31)
+material = SubResource("StandardMaterial3D_vm7x0")
+metadata/_edit_lock_ = true
 
 [node name="CSGBox3D3" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=1007854222]
 transform = Transform3D(0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, 0.8660254, -4, 1.75, -4)
@@ -96,20 +102,83 @@ transform = Transform3D(0.9659258, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.9659258
 size = Vector3(2, 4.5, 2)
 material = SubResource("StandardMaterial3D_aa0vk")
 
-[node name="CSGBox3D10" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=1451820598]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0, 9)
+[node name="Climbs" type="CSGCombiner3D" parent="Test Zone/CSGCombiner3D" unique_id=781221906]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, 10)
+
+[node name="CSGBox3D36" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=605176246]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.9990425, 0.049999863, -0.0035572052)
+size = Vector3(10, 1.1, 2)
+material = SubResource("StandardMaterial3D_vm7x0")
+
+[node name="CSGBox3D37" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=587389665]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 3, 0, -4)
 size = Vector3(2, 1, 2)
 material = SubResource("StandardMaterial3D_aa0vk")
 
-[node name="CSGBox3D11" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=1039953793]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, -0.049999982, 9)
+[node name="CSGBox3D38" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=1887380616]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 3, -0.049999982, -2)
 size = Vector3(2, 0.90000004, 2)
+material = SubResource("StandardMaterial3D_x655i")
+
+[node name="CSGBox3D39" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=493966723]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 3, -0.099999994, 0)
+size = Vector3(2, 0.8, 2)
+material = SubResource("StandardMaterial3D_x655i")
+
+[node name="CSGBox3D33" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=2040036314]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 3, -0.15, 2)
+size = Vector3(2, 0.7, 2)
+material = SubResource("StandardMaterial3D_x655i")
+
+[node name="CSGBox3D43" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=428397143]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 3, -0.19999999, 4)
+size = Vector3(2, 0.6, 2)
+material = SubResource("StandardMaterial3D_x655i")
+
+[node name="CSGBox3D40" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=232674086]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -1.0009575, 1.0499998, -4.003557)
+size = Vector3(2, 2.8, 2)
 material = SubResource("StandardMaterial3D_aa0vk")
 
-[node name="CSGBox3D12" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=1572617370]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, -0.099999994, 9)
-size = Vector3(2, 0.8, 2)
+[node name="CSGBox3D41" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=528442943]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -1.0009575, 0.9999999, -2.0035572)
+size = Vector3(2, 2.7, 2)
+material = SubResource("StandardMaterial3D_x655i")
+
+[node name="CSGBox3D44" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=1344749100]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -1.0009575, 0.89999974, -0.0035572052)
+size = Vector3(2, 2.7, 2)
+material = SubResource("StandardMaterial3D_x655i")
+
+[node name="CSGBox3D45" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=1661298916]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -1.0009575, 0.89999986, 1.9964428)
+size = Vector3(2, 2.5, 2)
+material = SubResource("StandardMaterial3D_x655i")
+
+[node name="CSGBox3D46" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=1510987707]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -1.0009575, 0.7999997, 3.9964428)
+size = Vector3(2, 2.5, 2)
+material = SubResource("StandardMaterial3D_x655i")
+
+[node name="CSGBox3D47" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=1754080066]
+transform = Transform3D(1.3113416e-07, 0, -1, 0, 1, 0, 1, 0, 1.3113416e-07, -3.0009575, 2.5000002, 2.0964432)
+size = Vector3(5.8, 5.3, 2)
+material = SubResource("StandardMaterial3D_vm7x0")
+
+[node name="CSGBox3D48" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=54451382]
+transform = Transform3D(1.3113416e-07, 0, -1, 0, 1, 0, 1, 0, 1.3113416e-07, -3.0009575, 2.6000001, 1.993269)
+size = Vector3(5.9936523, 5.5, 1.99)
 material = SubResource("StandardMaterial3D_aa0vk")
+
+[node name="CSGBox3D51" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=101117183]
+transform = Transform3D(1.3113416e-07, 0, -1, 0, 1, 0, 1, 0, 1.3113416e-07, -3.0009575, 2.5000002, -3.1035576)
+size = Vector3(3.8, 5.3, 2)
+material = SubResource("StandardMaterial3D_vm7x0")
+
+[node name="CSGBox3D52" type="CSGBox3D" parent="Test Zone/CSGCombiner3D/Climbs" unique_id=1205592902]
+transform = Transform3D(1.3113416e-07, 0, -1, 0, 1, 0, 1, 0, 1.3113416e-07, -3.0009575, 2.6000001, -3.0013604)
+size = Vector3(3.9956055, 5.5, 1.99)
+material = SubResource("StandardMaterial3D_x655i")
 
 [node name="CSGBox3D27" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=2000498278]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.75639653, 11)
@@ -117,14 +186,9 @@ size = Vector3(2, 2.512793, 2)
 material = SubResource("StandardMaterial3D_aa0vk")
 
 [node name="CSGBox3D32" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=1194899327]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.219, 0.75, 13)
-size = Vector3(2, 2.512793, 2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.205816, 0.75, 13)
+size = Vector3(2.0263672, 2.512793, 2)
 material = SubResource("StandardMaterial3D_aa0vk")
-
-[node name="CSGBox3D13" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=1011905165]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, -0.15, 9)
-size = Vector3(2, 0.7, 2)
-material = SubResource("StandardMaterial3D_x655i")
 
 [node name="CSGBox3D28" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=381249457]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, -0.15, 0)
@@ -141,9 +205,19 @@ transform = Transform3D(0.9787469, -0.20342116, 0.025967646, 0.20483395, 0.97584
 size = Vector3(0.4, 0.7, 4.1572266)
 material = SubResource("StandardMaterial3D_x655i")
 
-[node name="CSGBox3D14" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=17316816]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -0.19999999, 9)
+[node name="CSGBox3D34" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=905562906]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -0.2418457, 9)
+size = Vector3(2, 0.5163086, 2)
+material = SubResource("StandardMaterial3D_x655i")
+
+[node name="CSGBox3D35" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=859425708]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -0.2, 11)
 size = Vector3(2, 0.6, 2)
+material = SubResource("StandardMaterial3D_x655i")
+
+[node name="CSGBox3D42" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=1036335157]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -0.21956912, 13.05)
+size = Vector3(2, 0.7, 1.9)
 material = SubResource("StandardMaterial3D_x655i")
 
 [node name="CSGBox3D26" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=1363658879]
@@ -154,11 +228,6 @@ material = SubResource("StandardMaterial3D_x655i")
 [node name="CSGBox3D31" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=1138523051]
 transform = Transform3D(0.70710677, -0.7071068, 0, 0.7071068, 0.70710677, 0, 0, 0, 1, 7.057538, -0.65823114, 13)
 size = Vector3(5.232544, 2.009961, 2)
-material = SubResource("StandardMaterial3D_x655i")
-
-[node name="CSGBox3D33" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=214077319]
-transform = Transform3D(-0.112283796, -0.9936762, 0, 0.9936762, -0.112283796, 0, 0, 0, 1, -1.0253487, 0.07529038, 13)
-size = Vector3(6.7089233, 2.009961, 2)
 material = SubResource("StandardMaterial3D_x655i")
 
 [node name="CSGBox3D5" type="CSGBox3D" parent="Test Zone/CSGCombiner3D" unique_id=878387550]

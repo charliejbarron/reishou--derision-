@@ -5,7 +5,7 @@ static class SharedVariables
     public static JumpVariables JumpVars = new();
     public static SprintVariables SprintVars = new();
     public static DashVariables DashVars = new();
-    public static CameraVariables CameraVars = new();
+    public static StepVariables StepVars = new();
 
     public class JumpVariables
     {
@@ -30,8 +30,9 @@ static class SharedVariables
         internal bool TouchedFloor;
     }
 
-    public class CameraVariables
+    public class StepVariables
     {
         internal float StepOffset;
+        internal Vector3 Normal;
     }
 }

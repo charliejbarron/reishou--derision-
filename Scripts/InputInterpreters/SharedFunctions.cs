@@ -10,16 +10,16 @@ internal static class Interpreter
         return param;
     }
 
-    internal static Vector3 HeadPosition(float yPos)
+    internal static Vector3 HeadPosition()
     {
-        SharedVariables.CameraVariables vars = SharedVariables.CameraVars;
-        
-        Vector3 head = new Vector3(0, GameSettings.CameraOffset  - vars.StepOffset, 0);
+        SharedVariables.StepVariables vars = SharedVariables.StepVars;
+
+        Vector3 head = new Vector3(0, GameSettings.CameraOffset - vars.StepOffset, 0);
 
         float increase = Mathf.Max(1, vars.StepOffset);
-        
+
         vars.StepOffset = float.Lerp(vars.StepOffset, 0, GameManager.Delta * GameSettings.CameraYSmoothing * increase);
-        
+
         return head;
     }
 
@@ -27,26 +27,30 @@ internal static class Interpreter
     {
         player.CharacterFloorCast.ForceShapecastUpdate();
 
-        if (!player.CharacterFloorCast.IsColliding())
+        if (!player.CharacterFloorCast.IsColliding() || player.CharacterBody.Velocity.Y > 0f)
             return false;
 
-        float offset = (1 - player.CharacterFloorCast.GetClosestCollisionSafeFraction()) * (GameSettings.StepUpHeight + GameSettings.StepDownHeight) - GameSettings.StepDownHeight;
+        float offset = (1 - player.CharacterFloorCast.GetClosestCollisionSafeFraction()) * (GameSettings.StepUpHeight + GameSettings.StepDownHeight);
+        offset -= GameSettings.StepDownHeight + 0.005f;
 
-        // GD.Print(offset);
+        SharedVariables.StepVariables vars = SharedVariables.StepVars;
 
-        if (player.CharacterBody.Velocity.Y > 0f && offset <= 0f)
-            return false;
-        
         player.CharacterBody.GlobalPosition += Vector3.Up * offset;
+
+        Vector3 normal = player.CharacterFloorCast.GetCollisionNormal(0);
+        float angle = 90f - float.RadiansToDegrees(Mathf.Asin(normal.Y));
         
-        if (Mathf.Abs(offset) > 3e-02f)
+        if (angle <= 1e-05f || Mathf.Abs(offset) > 5e-02f)
         {
             player.CharacterBody.ResetPhysicsInterpolation();
-            
-            SharedVariables.CameraVariables vars = SharedVariables.CameraVars;
             vars.StepOffset += offset;
         }
 
+        if (angle >= GameSettings.MaxSlopeAngle)
+        {
+            // vars.Normal = 
+        }
+        
         return true;
     }
 
@@ -156,7 +160,9 @@ internal static class Interpreter
     {
         SharedVariables.JumpVars.JumpTiming = SharedVariables.JumpVars.AirTiming = -1f;
 
-        Vector3 dir = finalVelocity.Lerp(inputVelocity, 0.75f).Normalized();
+        Vector3 inputDir = SharedVariables.StepVars.Normal != Vector3.Zero ? SharedVariables.StepVars.Normal : inputVelocity;
+
+        Vector3 dir = finalVelocity.Lerp(inputDir, 0.75f).Normalized();
         Vector3 newVelocity = dir * (finalVelocity * new Vector3(1, 0, 1)).Length();
 
         newVelocity.Y = GameSettings.JumpHeight;
@@ -235,6 +241,7 @@ public static class SplitsFuncs
         if (candidates.Length == 0)
             return (position, velocity);
 
+        bool hasMatched = false;
         for (int i = 0; i < candidates.Length; i++)
         {
             Split split = splits[candidates[i]];
@@ -251,6 +258,8 @@ public static class SplitsFuncs
             if (!match)
                 continue;
 
+            hasMatched = true;
+
             Vector2 length = new Vector2(-split.Direction.Y, split.Direction.X);
 
             float offset = HorizontalPos(length, new Vector2(position.X, position.Z), new Vector2(split.Position.X, split.Position.Z));
@@ -261,6 +270,9 @@ public static class SplitsFuncs
             Vector3 velClamped = new Vector3(length.X, 0, length.Y) * velOffset;
             velocity = new Vector3(velClamped.X, velocity.Y, velClamped.Z);
         }
+
+        if (hasMatched)
+            SharedVariables.DashVars.DashTimer -= GameManager.Delta * GameSettings.DashWallLoss;
 
         return (position, velocity);
     }
