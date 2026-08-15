@@ -70,13 +70,6 @@ public partial class LevelNavigationManager : Node
 
             collider.Position = Vector3.Up * (GameSettings.PlayerHeight / 2f + GameSettings.StepUpHeight / 2f);
             collider.SetShape(shape);
-
-            // Slopes
-
-            _player.SlopeCast = _player.CharacterBody.GetNode<RayCast3D>("SlopeCast");
-
-            _player.SlopeCast.Position = Vector3.Up * (GameSettings.StepUpHeight + 0.1f);
-            _player.SlopeCast.TargetPosition = -_player.SlopeCast.Position * 2f;
         }
 
         Vector3 spawn = SetupScene();
@@ -139,14 +132,13 @@ public class Player
 {
     public CharacterBody3D CharacterBody;
     public ShapeCast3D CharacterFloorCast;
-    public RayCast3D SlopeCast;
     public Camera3D Camera;
 }
 
 public class ChunkInfo
 {
     public InputInterpreter Interpreter;
-    public InputInterpreterParameters? Parameter;
+    public InputInterpreterParameters Parameter;
     public Chunk[] Connected;
     public Split[] Splits;
     public Split[] Blockers;

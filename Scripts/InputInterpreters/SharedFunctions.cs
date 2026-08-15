@@ -12,7 +12,7 @@ internal static class Interpreter
 
     internal static Vector3 HeadPosition()
     {
-        SharedVariables.StepVariables vars = SharedVariables.StepVars;
+        SharedVariables.PhysicVariables vars = SharedVariables.PhysicsVars;
 
         Vector3 head = new Vector3(0, GameSettings.CameraOffset - vars.StepOffset, 0);
 
@@ -25,6 +25,7 @@ internal static class Interpreter
 
     internal static bool HandleFloor(Player player)
     {
+        SharedVariables.PhysicsVars.SlopeNormal = Vector3.Zero;
         player.CharacterFloorCast.ForceShapecastUpdate();
 
         if (!player.CharacterFloorCast.IsColliding() || player.CharacterBody.Velocity.Y > 0f)
@@ -33,13 +34,13 @@ internal static class Interpreter
         float offset = (1 - player.CharacterFloorCast.GetClosestCollisionSafeFraction()) * (GameSettings.StepUpHeight + GameSettings.StepDownHeight);
         offset -= GameSettings.StepDownHeight + 0.005f;
 
-        SharedVariables.StepVariables vars = SharedVariables.StepVars;
+        SharedVariables.PhysicVariables vars = SharedVariables.PhysicsVars;
 
         player.CharacterBody.GlobalPosition += Vector3.Up * offset;
 
         Vector3 normal = player.CharacterFloorCast.GetCollisionNormal(0);
         float angle = 90f - float.RadiansToDegrees(Mathf.Asin(normal.Y));
-        
+
         if (angle <= 1e-05f || Mathf.Abs(offset) > 5e-02f)
         {
             player.CharacterBody.ResetPhysicsInterpolation();
@@ -47,10 +48,8 @@ internal static class Interpreter
         }
 
         if (angle >= GameSettings.MaxSlopeAngle)
-        {
-            // vars.Normal = 
-        }
-        
+            SharedVariables.PhysicsVars.SlopeNormal = normal.Cross(new Vector3(-normal.Z, 0, normal.X).Normalized());
+
         return true;
     }
 
@@ -160,9 +159,9 @@ internal static class Interpreter
     {
         SharedVariables.JumpVars.JumpTiming = SharedVariables.JumpVars.AirTiming = -1f;
 
-        Vector3 inputDir = SharedVariables.StepVars.Normal != Vector3.Zero ? SharedVariables.StepVars.Normal : inputVelocity;
+        Vector3 inputDir = SharedVariables.PhysicsVars.SlopeNormal != Vector3.Zero ? SharedVariables.PhysicsVars.SlopeNormal : inputVelocity;
 
-        Vector3 dir = finalVelocity.Lerp(inputDir, 0.75f).Normalized();
+        Vector3 dir = finalVelocity.Lerp(inputDir, 1f / Mathf.Max(finalVelocity.Length(), 1.45f)).Normalized();
         Vector3 newVelocity = dir * (finalVelocity * new Vector3(1, 0, 1)).Length();
 
         newVelocity.Y = GameSettings.JumpHeight;
@@ -204,6 +203,17 @@ internal static class Interpreter
         Vector3 movementDir = new Vector3(input.X, 0, -input.Y) * forward;
         Vector3 velocity = bodyVelocity * new Vector3(1, 0, 1);
         Vector3 inputVelocity = velocity + movementDir * (floored ? GameSettings.Control * (velocity.Length() * 0.2f + 1) : GameSettings.Control);
+
+        SharedVariables.PhysicVariables vars = SharedVariables.PhysicsVars;
+        
+        // Needs major improvement
+        
+        if (vars.SlopeNormal != Vector3.Zero)
+        {
+            inputVelocity *= Mathf.Clamp(inputVelocity.Dot(new Vector3(vars.SlopeNormal.X, 0, vars.SlopeNormal.Z).Normalized()), 0,
+                1);
+            inputVelocity += GameManager.Delta * Mathf.Abs(vars.SlopeNormal.Y) * 55f * (vars.SlopeNormal + Vector3.Down);
+        }
 
         return (movementDir, velocity, inputVelocity);
     }

@@ -15,8 +15,7 @@ public static class FileManager
 
         InputInterpreterParameters[][] parametersArray = LoadParameters(scene);
 
-        // GD.Print(JsonConvert.SerializeObject(scene, Formatting.Indented));
-        return (fileChunks, scene.StartingChunk, loadedInterpreters, parametersArray); // switch to use the scenes startup chunk
+        return (fileChunks, 0, loadedInterpreters, parametersArray); // Look at /mnt/HHD/Godot/SekiroGameLayout "ConnectedScenes":
     }
 
     static Chunk[] AddSharedSplits(Chunk[] chunks)
@@ -105,7 +104,6 @@ public static class FileManager
     {
         Scene scene = new Scene
         {
-            StartingChunk = 0,
             Interpreters =
             [
                 new SceneInterpreter

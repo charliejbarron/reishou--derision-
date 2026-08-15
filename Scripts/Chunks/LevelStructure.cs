@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using JsonSubTypes;
 public class Scene
 {
-    public int StartingChunk = 0;
     public Chunk[] Chunks;
     public SceneInterpreter[] Interpreters;
 }

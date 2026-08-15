@@ -21,6 +21,17 @@ internal static class Debugging
         
         DebugDraw3D.DrawLine(head, interpolated, Colors.White);
         DebugDraw3D.DrawCylinder(new Transform3D(Cylinder, interpolated), Colors.MediumSpringGreen);
+        DrawSteps(interpolated);
+
+        if (SharedVariables.PhysicsVars.SlopeNormal != Vector3.Zero)
+        {
+            // DebugDraw3D.DrawArrowRay(interpolated, SharedVariables.PhysicsVars.LimitNormal, 1f, Colors.DeepSkyBlue, 0.2f);
+            DebugDraw3D.DrawArrowRay(interpolated, SharedVariables.PhysicsVars.SlopeNormal, 1f, Colors.MediumSlateBlue, 0.2f);
+        }
+    }
+
+    internal static void DrawSteps(Vector3 interpolated)
+    {
         DebugDraw3D.DrawCylinder(new Transform3D(Cylinder, interpolated + Vector3.Up * GameSettings.StepUpHeight), Colors.Chartreuse);
         DebugDraw3D.DrawCylinder(new Transform3D(Cylinder, interpolated + Vector3.Down * GameSettings.StepDownHeight), Colors.Crimson);
     }
