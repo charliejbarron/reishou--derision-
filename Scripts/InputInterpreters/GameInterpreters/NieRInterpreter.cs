@@ -24,6 +24,7 @@ public partial class NieRInterpreter : QuakeInterpreter
             Vector3 finalVelocity = Interpreter.MovementVelocity(velocities.newVelocity, speed,  Interpreter.Gravity(floored, body.Velocity.Y));
 
             finalVelocity = Interpreter.Slopes(finalVelocity);
+            GD.Print(finalVelocity.Length());
             
             if (canJump)
                 finalVelocity = Interpreter.Jump(finalVelocity, velocities.inputVelocity);
@@ -49,8 +50,6 @@ public partial class NieRInterpreter : QuakeInterpreter
                 Origin = interpolated + Interpreter.HeadPosition() + newBasis * parameters.CameraOffset,
                 Basis = newBasis
             };
-
-            // GD.Print("origin: " + transform.Origin.Y);
             
             return transform;
         }

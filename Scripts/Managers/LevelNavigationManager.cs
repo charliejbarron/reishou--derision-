@@ -86,11 +86,17 @@ public partial class LevelNavigationManager : Node
     {
         void SwitchChunk(int chunk)
         {
+            if (chunk == -1)
+                return;
+
             // if new interpreter OR different parameters'
             // interpreter.Events.OnExit()
+
             // _chunks[_currentChunk].Events.OnExit();
             _currentChunk = _chunks[_currentChunk].VisibleChunks[chunk];
             // _chunks[_currentChunk].Events.OnEnter();
+
+            // if new interpreter OR different parameters'
             // interpreter.Events.OnEnter()
 
             _info = GetChunkInfo(_currentChunk);
@@ -98,12 +104,8 @@ public partial class LevelNavigationManager : Node
         }
 
         _info.Interpreter.HandleMovementInputs(inputs, _player, _info.Parameter);
-
         _info.Interpreter.HandleBlockers(_info.Blockers, _player);
-        int chunk = _info.Interpreter.CheckSplits(_info.Splits, _player.CharacterBody);
-
-        if (chunk != -1)
-            SwitchChunk(chunk);
+        SwitchChunk(_info.Interpreter.CheckSplits(_info.Splits, _player.CharacterBody));
     }
 
     public void HandleCamera(PlayerInput.NavigationInput inputs)
