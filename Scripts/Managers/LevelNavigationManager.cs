@@ -45,12 +45,18 @@ public partial class LevelNavigationManager : Node
 
             _player.CharacterBody.GlobalPosition = spawn;
 
+            // Slopes
+
+            _player.SlopeCast = _player.CharacterBody.GetNode<RayCast3D>("SlopeCast");
+            _player.SlopeCast.Position = Vector3.Up * (GameSettings.StepUpHeight + 0.1f);
+            _player.SlopeCast.TargetPosition = -_player.SlopeCast.Position * 2f;
+
             // Steps
 
-            _player.CharacterFloorCast = _player.CharacterBody.GetNode<ShapeCast3D>("FloorCast");
+            _player.FloorCast = _player.CharacterBody.GetNode<ShapeCast3D>("FloorCast");
 
-            _player.CharacterFloorCast.Position = Vector3.Up * (GameSettings.StepUpHeight + 0.1f);
-            _player.CharacterFloorCast.TargetPosition = -_player.CharacterFloorCast.Position + Vector3.Down * GameSettings.StepDownHeight;
+            _player.FloorCast.Position = Vector3.Up * (GameSettings.StepUpHeight + 0.1f);
+            _player.FloorCast.TargetPosition = -_player.FloorCast.Position + Vector3.Down * GameSettings.StepDownHeight;
 
             CylinderShape3D castShape = new()
             {
@@ -58,7 +64,7 @@ public partial class LevelNavigationManager : Node
                 Height = 0.05f
             };
 
-            _player.CharacterFloorCast.SetShape(castShape);
+            _player.FloorCast.SetShape(castShape);
 
             CylinderShape3D shape = new()
             {
@@ -66,7 +72,7 @@ public partial class LevelNavigationManager : Node
                 Height = GameSettings.PlayerHeight - GameSettings.StepUpHeight
             };
 
-            CollisionShape3D collider = _player.CharacterBody.GetNode<CollisionShape3D>("Collider");
+            CollisionShape3D collider = _player.CharacterBody.GetNode<CollisionShape3D>("PhysicsCollider");
 
             collider.Position = Vector3.Up * (GameSettings.PlayerHeight / 2f + GameSettings.StepUpHeight / 2f);
             collider.SetShape(shape);
@@ -131,7 +137,8 @@ public partial class LevelNavigationManager : Node
 public class Player
 {
     public CharacterBody3D CharacterBody;
-    public ShapeCast3D CharacterFloorCast;
+    public ShapeCast3D FloorCast;
+    public RayCast3D SlopeCast;
     public Camera3D Camera;
 }
 

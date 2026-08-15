@@ -33,7 +33,7 @@ static class SharedVariables
     public class PhysicVariables
     {
         internal float StepOffset;
-        internal Vector3 LimitNormal;
+        internal bool OnSlope;
         internal Vector3 SlopeNormal;
     }
 }

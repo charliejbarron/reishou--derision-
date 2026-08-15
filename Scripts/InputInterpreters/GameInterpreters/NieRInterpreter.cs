@@ -23,6 +23,8 @@ public partial class NieRInterpreter : QuakeInterpreter
 
             Vector3 finalVelocity = Interpreter.MovementVelocity(velocities.newVelocity, speed,  Interpreter.Gravity(floored, body.Velocity.Y));
 
+            finalVelocity = Interpreter.Slopes(finalVelocity);
+            
             if (canJump)
                 finalVelocity = Interpreter.Jump(finalVelocity, velocities.inputVelocity);
 

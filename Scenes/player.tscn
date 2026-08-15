@@ -12,7 +12,7 @@ radius = 0.19
 [node name="Player" type="CharacterBody3D" unique_id=582331314]
 floor_snap_length = 0.0
 
-[node name="Collider" type="CollisionShape3D" parent="." unique_id=607416443]
+[node name="PhysicsCollider" type="CollisionShape3D" parent="." unique_id=607416443]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.885, 0)
 shape = SubResource("CylinderShape3D_5etin")
 debug_color = Color(0, 1.1971331, 0.480331, 1)
@@ -23,3 +23,4 @@ shape = SubResource("CylinderShape3D_aa0vk")
 max_results = 1
 
 [node name="SlopeCast" type="RayCast3D" parent="." unique_id=1689248657]
+transform = Transform3D(1.0029689, 0, 0, 0, 1.0029689, 0, 0, 0, 1.0029689, 0, 0, 0)
