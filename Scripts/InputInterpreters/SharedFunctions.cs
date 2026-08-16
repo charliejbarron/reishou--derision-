@@ -9,6 +9,32 @@ internal static class Interpreter
 
         return param;
     }
+    
+    internal static Vector3 HandleMovement(PlayerInput.MovementInput movementInput, Player player, Basis forward)
+    {
+        bool floored = Interpreter.HandleFloor(player);
+        
+        float moveSpeed = Interpreter.GetSprint(movementInput.Movement, player.CharacterBody.Velocity.Length(), movementInput.Sprint) > 0f && floored ? GameSettings.MaxSprintSpeed : GameSettings.MaxWalkSpeed;
+        var velocities = Interpreter.CalculateInput(movementInput.Movement, forward, player.CharacterBody.Velocity, floored);
+
+        Vector3 dash = Interpreter.ClampToSlope(Interpreter.Dash(movementInput.Dash, floored, movementInput.Movement, player.CharacterBody.IsOnWall()) * forward);
+        bool canJump = Interpreter.CanJump(movementInput.Jump, floored, dash != Vector3.Zero);
+
+        if (dash != Vector3.Zero)
+            return dash + new Vector3(0, Interpreter.Gravity(floored), 0);
+
+        float friction = Interpreter.CalculateFriction(floored, velocities.newVelocity, moveSpeed, movementInput.Movement.Length(), player.CharacterBody.IsOnWall());
+        float speed = Interpreter.CalculateSpeed(velocities.oldVelocity.Length(), moveSpeed, velocities.newVelocity.Length(), friction);
+
+        Vector3 finalVelocity = Interpreter.MovementVelocity(velocities.newVelocity, speed, Interpreter.Gravity(floored, player.CharacterBody.Velocity.Y));
+
+        finalVelocity = Interpreter.HandleSlopes(finalVelocity);
+            
+        if (canJump)
+            finalVelocity = Interpreter.Jump(finalVelocity, velocities.inputVelocity);
+
+        return finalVelocity;
+    }
 
     internal static Vector3 HeadPosition()
     {
@@ -34,7 +60,7 @@ internal static class Interpreter
             return false;
         }
 
-        SharedVariables.PhysicsVars.SlopeNormal = Vector3.Zero;
+        vars.LimitNormal = vars.SlopeNormal = Vector3.Zero;
 
         float offset = (1 - player.FloorCast.GetClosestCollisionSafeFraction()) * (GameSettings.StepUpHeight + GameSettings.StepDownHeight);
         offset -= GameSettings.StepDownHeight + 0.005f;
@@ -57,43 +83,43 @@ internal static class Interpreter
         SharedVariables.PhysicsVars.OnSlope = false;
         bool collision = player.SlopeCast.IsColliding();
 
+        // slope normal should only be from raycast, limit normal should be shapecast
         if (collision)
         {
             Vector3 rayNormal = player.SlopeCast.GetCollisionNormal();
 
-            if (rayNormal.Y < 1 - 1e-04)
+            if (90f - float.RadiansToDegrees(Mathf.Asin(rayNormal.Y)) > GameSettings.MaxSlopeAngle)
             {
                 SharedVariables.PhysicsVars.OnSlope = true;
-                normal = rayNormal;
+                SharedVariables.PhysicsVars.SlopeNormal = rayNormal.Cross(new Vector3(-rayNormal.Z, 0, rayNormal.X).Normalized());
             }
         }
         else
         {
-            SharedVariables.PhysicsVars.OnSlope = true;
+            SharedVariables.PhysicsVars.OnSlope = false;
         }
 
-        SharedVariables.PhysicsVars.SlopeNormal = normal.Cross(new Vector3(-normal.Z, 0, normal.X).Normalized());
+        SharedVariables.PhysicsVars.LimitNormal = new Vector3(normal.X, 0, normal.Z).Normalized();
         return true;
     }
 
     internal static Vector3 Dash(bool dash, bool floored, Vector2 moveInput, bool isOnWall)
     {
         SharedVariables.DashVariables dashVars = SharedVariables.DashVars;
-
-        Vector3 clamped = ClampToSlope(moveInput);
-        moveInput = new Vector2(clamped.X, clamped.Z);
-
+        bool onSlope = SharedVariables.PhysicsVars.OnSlope;
+        
         if (floored != dashVars.TouchedFloor)
             dashVars.DashCooldown = 0;
 
-        if (floored)
+        if (floored && !onSlope)
             dashVars.TouchedFloor = true;
 
         dashVars.DashTimer -= GameManager.Delta * (isOnWall ? GameSettings.DashWallLoss : 1);
 
         if (dashVars.DashTimer > GameSettings.DashFalloff)
         {
-            return dashVars.DashDir * GameSettings.DashForce * dashVars.DashTimer;
+            SharedVariables.PhysicsVars.LimitNormal = SharedVariables.PhysicsVars.SlopeNormal = Vector3.Zero;
+            return onSlope ? Vector3.Zero : dashVars.DashDir * GameSettings.DashForce * dashVars.DashTimer;
         }
 
         dashVars.DashCooldown -= GameManager.Delta;
@@ -110,7 +136,7 @@ internal static class Interpreter
         dashVars.DashCooldown = GameSettings.DashCooldown;
         dashVars.DashTimer = GameSettings.DashTime + GameSettings.DashFalloff;
         dashVars.DashDir = moveInput == Vector2.Zero ? new Vector3(0, 0, -1) : new Vector3(moveInput.X, 0, -moveInput.Y).Normalized();
-        return dashVars.DashDir * GameSettings.DashForce * GameManager.Delta * dashVars.DashCooldown;
+        return onSlope ? Vector3.Zero : dashVars.DashDir * GameSettings.DashForce * GameManager.Delta * dashVars.DashCooldown;
     }
 
     internal static float GetSprint(Vector2 moveInput, float speed, bool sprintInput)
@@ -197,7 +223,7 @@ internal static class Interpreter
 
     internal static float CalculateFriction(bool floored, Vector3 newVelocity, float targetSpeed, float input, bool isOnWall)
     {
-        isOnWall = isOnWall || !SharedVariables.PhysicsVars.OnSlope && SharedVariables.PhysicsVars.SlopeNormal != Vector3.Zero; 
+        isOnWall = isOnWall || !SharedVariables.PhysicsVars.OnSlope && SharedVariables.PhysicsVars.LimitNormal != Vector3.Zero; 
         
         if (!floored)
             return 1f;
@@ -231,14 +257,14 @@ internal static class Interpreter
         Vector3 movementDir = new Vector3(input.X, 0, -input.Y) * forward;
         Vector3 velocity = bodyVelocity * new Vector3(1, 1, 1);
         
-        movementDir = ClampToSlope(movementDir);
+        movementDir = ClampToSlope(movementDir, 1f);
         
         Vector3 inputVelocity = velocity + movementDir * (floored ? GameSettings.Control * (velocity.Length() * 0.2f + 1) : GameSettings.Control);
 
         return (movementDir, velocity, inputVelocity);
     }
 
-    internal static Vector3 Slopes(Vector3 velocity)
+    internal static Vector3 HandleSlopes(Vector3 velocity)
     {
         SharedVariables.PhysicVariables vars = SharedVariables.PhysicsVars;
 
@@ -253,25 +279,29 @@ internal static class Interpreter
         return velocity;
     }
 
-    static Vector3 ClampToSlope(Vector3 clamp)
+    internal static Vector3 ClampToSlope(Vector3 clamp, float? movement = null)
     {
+        float velocity = movement ?? clamp.Length();
+        
         SharedVariables.PhysicVariables vars = SharedVariables.PhysicsVars;
 
-        if (vars.SlopeNormal == Vector3.Zero) 
+        if (vars.LimitNormal == Vector3.Zero) 
             return clamp;
         
-        float dot = clamp.Dot(new Vector3(vars.SlopeNormal.X, 0, vars.SlopeNormal.Z).Normalized());
+        float dot = clamp.Dot(vars.LimitNormal.Normalized());
 
         if (dot >= 0f) 
             return clamp;
         
-        clamp -= dot * new Vector3(vars.SlopeNormal.X, 0, vars.SlopeNormal.Z).Normalized();
+        clamp -= dot * vars.LimitNormal.Normalized() * Mathf.Min(1f, velocity);
 
         return clamp;
     }
     
-    static Vector3 ClampToSlope(Vector2 clamp)
+    static Vector3 ClampToSlope(Vector2 clamp, float? movement = null)
     {
+        float velocity = movement ?? clamp.Length();
+        
         Vector3 newClamp = new Vector3(clamp.X, 0, clamp.Y);
         SharedVariables.PhysicVariables vars = SharedVariables.PhysicsVars;
 
@@ -283,7 +313,7 @@ internal static class Interpreter
         if (dot >= 0f) 
             return newClamp;
         
-        newClamp -= dot * new Vector3(vars.SlopeNormal.X, 0, vars.SlopeNormal.Z).Normalized();
+        newClamp -= dot * new Vector3(vars.SlopeNormal.X, 0, vars.SlopeNormal.Z).Normalized() * Mathf.Min(1f, velocity);
 
         return newClamp;
     }

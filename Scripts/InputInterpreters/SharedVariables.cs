@@ -35,5 +35,6 @@ static class SharedVariables
         internal float StepOffset;
         internal bool OnSlope;
         internal Vector3 SlopeNormal;
+        internal Vector3 LimitNormal;
     }
 }

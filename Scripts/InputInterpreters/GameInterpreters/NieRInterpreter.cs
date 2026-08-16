@@ -5,34 +5,7 @@ public partial class NieRInterpreter : QuakeInterpreter
 {
     public override void HandleMovementInputs(PlayerInput.NavigationInput navigationInput, Player player, InputInterpreterParameters parameter)
     {
-        bool floored = Interpreter.HandleFloor(player);
-
-        Vector3 HandleMovement(PlayerInput.MovementInput movementInput, CharacterBody3D body, Basis forward)
-        {
-            float moveSpeed = Interpreter.GetSprint(movementInput.Movement,  body.Velocity.Length(), movementInput.Sprint) > 0f && floored ? GameSettings.MaxSprintSpeed : GameSettings.MaxWalkSpeed;
-            var velocities = Interpreter.CalculateInput(movementInput.Movement, forward, body.Velocity, floored);
-
-            Vector3 dash = Interpreter.Dash(movementInput.Dash, floored, movementInput.Movement, body.IsOnWall()) * forward;
-            bool canJump = Interpreter.CanJump(movementInput.Jump, floored, dash != Vector3.Zero);
-
-            if (dash != Vector3.Zero)
-                return dash + new Vector3(0, Interpreter.Gravity(floored), 0);
-
-            float friction = Interpreter.CalculateFriction(floored, velocities.newVelocity, moveSpeed, movementInput.Movement.Length(), body.IsOnWall());
-            float speed = Interpreter.CalculateSpeed(velocities.oldVelocity.Length(), moveSpeed, velocities.newVelocity.Length(), friction);
-
-            Vector3 finalVelocity = Interpreter.MovementVelocity(velocities.newVelocity, speed,  Interpreter.Gravity(floored, body.Velocity.Y));
-
-            finalVelocity = Interpreter.Slopes(finalVelocity);
-            GD.Print(finalVelocity.Length());
-            
-            if (canJump)
-                finalVelocity = Interpreter.Jump(finalVelocity, velocities.inputVelocity);
-
-            return finalVelocity;
-        }
-        
-        player.CharacterBody.Velocity = HandleMovement(navigationInput.MovementInputs, player.CharacterBody, new Basis(Vector3.Up, -player.Camera.GlobalRotation.Y));
+        player.CharacterBody.Velocity = Interpreter.HandleMovement(navigationInput.MovementInputs, player, new Basis(Vector3.Up, -player.Camera.GlobalRotation.Y));
         player.CharacterBody.MoveAndSlide();
     }
     
