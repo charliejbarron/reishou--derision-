@@ -22,5 +22,8 @@ enabled = false
 shape = SubResource("CylinderShape3D_aa0vk")
 max_results = 1
 
-[node name="SlopeCast" type="RayCast3D" parent="." unique_id=1689248657]
+[node name="FootCast" type="RayCast3D" parent="." unique_id=1689248657]
 transform = Transform3D(1.0029689, 0, 0, 0, 1.0029689, 0, 0, 0, 1.0029689, 0, 0, 0)
+
+[node name="SlopeCast" type="RayCast3D" parent="." unique_id=1321791396]
+transform = Transform3D(1.0000715, 0, 0, 0, 1.0000715, 0, 0, 0, 1.0000715, 0, 0, 0)
