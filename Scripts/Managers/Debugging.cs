@@ -32,9 +32,7 @@ internal static class Debugging
     internal static void DrawSlopes(Vector3 interpolated, SharedVariables.PhysicVariables vars)
     {
         DebugDraw3D.DrawArrowRay(interpolated, vars.LimitNormal, 1f, Colors.DeepSkyBlue, 0.2f);
-        
-        if (vars.OnSlope)
-            DebugDraw3D.DrawArrowRay(interpolated, vars.SlopeNormal, 1f, Colors.MediumSlateBlue, 0.2f);
+        DebugDraw3D.DrawArrowRay(interpolated, vars.SlopeNormal, 1f, Colors.MediumSlateBlue, 0.2f);
     }
 
     internal static void DrawSteps(Vector3 interpolated)

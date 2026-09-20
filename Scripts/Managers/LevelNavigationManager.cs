@@ -49,10 +49,10 @@ public partial class LevelNavigationManager : Node
 
             _player.FootCast = _player.CharacterBody.GetNode<RayCast3D>("FootCast");
             _player.FootCast.Position = Vector3.Up * (GameSettings.StepUpHeight + 0.1f);
-            _player.FootCast.TargetPosition = -_player.FootCast.Position * 1.1f;
+            _player.FootCast.TargetPosition = -_player.FootCast.Position * 1f;
             
             _player.SlopeCast = _player.CharacterBody.GetNode<RayCast3D>("SlopeCast");
-            _player.SlopeCast.TargetPosition = Vector3.Down * 1.25f;
+            _player.SlopeCast.TargetPosition = Vector3.Down * 1f;
 
             // Steps
 

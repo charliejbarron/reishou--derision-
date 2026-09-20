@@ -36,7 +36,7 @@ static class GameSettings
 
     internal const float DashForce = 32f;
     internal const float DashCooldown = 0.5f;
-    internal const float DashPadding = 0.3f;
+    internal const float DashPadding = 0.15f;
     internal const float DashTime = 0.2f;
     internal const float DashFalloff = 0.2f;
     internal const float DashWallLoss = 3f;
