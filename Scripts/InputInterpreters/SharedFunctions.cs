@@ -52,94 +52,103 @@ internal static class Interpreter
 
     internal static bool HandleFloor(Player player, bool forceSlope = false)
     {
-        Vector3 RayNormal()
-        {
-            Vector3 castPos = player.FloorCast.GetCollisionPoint(0);
-            player.SlopeCast.Position = (castPos - player.CharacterBody.GlobalPosition) * 1.1f + Vector3.Up;
-            player.SlopeCast.ForceRaycastUpdate();
-
-            return player.SlopeCast.GetCollisionNormal();
-        }
-
-        bool IsStep(float stepHeight, float rise)
-        {
-            bool falling = player.CharacterBody.Velocity.Y < -5e-01f && stepHeight < 0f;
-            return !falling && Mathf.Abs(stepHeight) > rise && Mathf.Abs(stepHeight) > 1e-02f;
-        }
-
-        bool IsSlope(float normalY)
-        {
-            return 90f - float.RadiansToDegrees(Mathf.Asin(normalY)) >= GameSettings.MaxSlopeAngle;
-        }
-
-        SharedVariables.PhysicVariables vars = SharedVariables.PhysicsVars;
-        player.FloorCast.ForceShapecastUpdate();
-        bool collision = player.FloorCast.IsColliding();
-
-        SharedVariables.PhysicsVars.OnSlope = !collision;
-
-        if (!collision || player.CharacterBody.Velocity.Y > 0f)
-        {
-            SharedVariables.PhysicsVars.SlopeNormal = SharedVariables.PhysicsVars.SlopeNormal.Lerp(Vector3.Zero, GameManager.Delta);
-            return vars.OnSlope = false;
-        }
-
-        vars.LimitNormal = vars.SlopeNormal = Vector3.Zero;
-
-        float offset = (1 - player.FloorCast.GetClosestCollisionSafeFraction()) * (GameSettings.StepUpHeight + GameSettings.StepDownHeight + 0.025f);
-        offset -= GameSettings.StepDownHeight + 0.0125f;
-
-        player.CharacterBody.GlobalPosition += Vector3.Up * offset;
-
-        Vector3 normal = RayNormal();
-        float slope = Mathf.Sqrt(Mathf.Abs(normal.X) + Mathf.Abs(normal.Z)) * 0.15f;
-
-        if (IsStep(offset, slope))
-        {
-            // Step (Step logic is outside of this)
-            GD.Print("Stepped");
-            player.CharacterBody.ResetPhysicsInterpolation();
-            vars.StepOffset += offset;
-        }
-
-        // player.FootCast.ForceRaycastUpdate();
-
-        // if (!IsSlope(player.FootCast.GetCollisionNormal().Y) && !forceSlope)
+        // 1. Send out shapecast to find highest point below player
+        // 2. Have Raycast[3] test 3 points, The highest point position, fraction based, and under the players feet
+        // 3. if the first hits, and is a greater gradient (not slope) than expected, move height to it.
+        // 4. if slope is too great, move to next.
+        // 5. if the second hits, move to it
+        // 6. if slope is too great, set limit angle and move to next
+        // 7. if slope is too great on last, start sliding.
+        
+        
+        // Vector3 RayNormal()
         // {
+        //     Vector3 castPos = player.FloorCast.GetCollisionPoint(0);
+        //     player.SlopeCast.Position = (castPos - player.CharacterBody.GlobalPosition) * 1.1f + Vector3.Up;
+        //     player.SlopeCast.ForceRaycastUpdate();
+        //
+        //     return player.SlopeCast.GetCollisionNormal();
+        // }
+        //
+        // bool IsStep(float stepHeight, float rise)
+        // {
+        //     bool falling = player.CharacterBody.Velocity.Y < -5e-01f && stepHeight < 0f;
+        //     return !falling && Mathf.Abs(stepHeight) > rise && Mathf.Abs(stepHeight) > 1e-02f;
+        // }
+        //
+        // bool IsSlope(float normalY)
+        // {
+        //     return 90f - float.RadiansToDegrees(Mathf.Asin(normalY)) >= GameSettings.MaxSlopeAngle;
+        // }
+        //
+        // SharedVariables.PhysicVariables vars = SharedVariables.PhysicsVars;
+        // player.FloorCast.ForceShapecastUpdate();
+        // bool collision = player.FloorCast.IsColliding();
+        //
+        // SharedVariables.PhysicsVars.OnSlope = !collision;
+        //
+        // if (!collision || player.CharacterBody.Velocity.Y > 0f)
+        // {
+        //     SharedVariables.PhysicsVars.SlopeNormal = SharedVariables.PhysicsVars.SlopeNormal.Lerp(Vector3.Zero, GameManager.Delta);
+        //     return vars.OnSlope = false;
+        // }
+        //
+        // vars.LimitNormal = vars.SlopeNormal = Vector3.Zero;
+        //
+        // float offset = (1 - player.FloorCast.GetClosestCollisionSafeFraction()) * (GameSettings.StepUpHeight + GameSettings.StepDownHeight + 0.025f);
+        // offset -= GameSettings.StepDownHeight + 0.0125f;
+        //
+        // player.CharacterBody.GlobalPosition += Vector3.Up * offset;
+        //
+        // Vector3 normal = RayNormal();
+        // float slope = Mathf.Sqrt(Mathf.Abs(normal.X) + Mathf.Abs(normal.Z)) * 0.15f;
+        //
+        // if (IsStep(offset, slope))
+        // {
+        //     // Step (Step logic is outside of this)
+        //     GD.Print("Stepped");
+        //     player.CharacterBody.ResetPhysicsInterpolation();
+        //     vars.StepOffset += offset;
+        // }
+        //
+        // // player.FootCast.ForceRaycastUpdate();
+        //
+        // // if (!IsSlope(player.FootCast.GetCollisionNormal().Y) && !forceSlope)
+        // // {
+        // //     player.SlopeEdgeCast.Position = player.SlopeCast.Position * new Vector3(GameSettings.SlopeStopFraction, 1, GameSettings.SlopeStopFraction);
+        // //     player.SlopeEdgeCast.ForceRaycastUpdate();
+        // //
+        // //     if (!IsSlope(player.SlopeEdgeCast.GetCollisionNormal().Y))
+        // //         SharedVariables.PhysicsVars.LimitNormal = Vector3.Zero;
+        // //
+        // //     SharedVariables.PhysicsVars.OnSlope = false;
+        // //     return true;
+        // // }
+        //
+        // // player.SlopeEdgeCast.Position = player.SlopeCast.Position * new Vector3(GameSettings.SlopeStopFraction, 1, GameSettings.SlopeStopFraction);
+        // SharedVariables.PhysicsVars.LimitNormal = new Vector3(normal.X, 0, normal.Z).Normalized();
+        //
+        // player.FootCast.ForceRaycastUpdate();
+        // bool footSlope = IsSlope(player.FootCast.GetCollisionNormal().Y);
+        //
+        // if (!footSlope)
+        // {
+        //     GD.Print("not slope");
         //     player.SlopeEdgeCast.Position = player.SlopeCast.Position * new Vector3(GameSettings.SlopeStopFraction, 1, GameSettings.SlopeStopFraction);
         //     player.SlopeEdgeCast.ForceRaycastUpdate();
         //
         //     if (!IsSlope(player.SlopeEdgeCast.GetCollisionNormal().Y))
+        //     {
+        //         GD.Print("aaa");
         //         SharedVariables.PhysicsVars.LimitNormal = Vector3.Zero;
-        //
+        //     }
+        //     
         //     SharedVariables.PhysicsVars.OnSlope = false;
         //     return true;
         // }
-        
-        // player.SlopeEdgeCast.Position = player.SlopeCast.Position * new Vector3(GameSettings.SlopeStopFraction, 1, GameSettings.SlopeStopFraction);
-        SharedVariables.PhysicsVars.LimitNormal = new Vector3(normal.X, 0, normal.Z).Normalized();
-        
-        player.FootCast.ForceRaycastUpdate();
-        bool footSlope = IsSlope(player.FootCast.GetCollisionNormal().Y);
-
-        if (!footSlope)
-        {
-            GD.Print("not slope");
-            player.SlopeEdgeCast.Position = player.SlopeCast.Position * new Vector3(GameSettings.SlopeStopFraction, 1, GameSettings.SlopeStopFraction);
-            player.SlopeEdgeCast.ForceRaycastUpdate();
-
-            if (!IsSlope(player.SlopeEdgeCast.GetCollisionNormal().Y))
-            {
-                GD.Print("aaa");
-                SharedVariables.PhysicsVars.LimitNormal = Vector3.Zero;
-            }
-            
-            SharedVariables.PhysicsVars.OnSlope = false;
-            return true;
-        }
-
-        SharedVariables.PhysicsVars.OnSlope = true;
-        SharedVariables.PhysicsVars.SlopeNormal = normal.Cross(new Vector3(-normal.Z, 0, normal.X).Normalized());
+        //
+        // SharedVariables.PhysicsVars.OnSlope = true;
+        // SharedVariables.PhysicsVars.SlopeNormal = normal.Cross(new Vector3(-normal.Z, 0, normal.X).Normalized());
 
         return true;
     }
