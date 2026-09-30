@@ -47,6 +47,7 @@ static class GameSettings
     internal const float StepUpHeight = 0.45f;
     internal const float StepDownHeight = 0.1f;
     internal const float MaxSlopeAngle = 35f;
+    internal const float SlopeStopFraction = 0.5f;
     
     internal const float CameraOffset = 1.57f;
     internal const float CameraYSmoothing = 2f;

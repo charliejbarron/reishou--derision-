@@ -47,9 +47,12 @@ public partial class LevelNavigationManager : Node
 
             // Slopes
 
+            _player.SlopeEdgeCast = _player.CharacterBody.GetNode<RayCast3D>("SlopeEdgeCast");
+            _player.SlopeEdgeCast.TargetPosition = Vector3.Down * 2f;
+            
             _player.FootCast = _player.CharacterBody.GetNode<RayCast3D>("FootCast");
             _player.FootCast.Position = Vector3.Up * (GameSettings.StepUpHeight + 0.1f);
-            _player.FootCast.TargetPosition = -_player.FootCast.Position * 1f;
+            _player.FootCast.TargetPosition = -_player.FootCast.Position * 2f;
             
             _player.SlopeCast = _player.CharacterBody.GetNode<RayCast3D>("SlopeCast");
             _player.SlopeCast.TargetPosition = Vector3.Down * 1f;
@@ -144,6 +147,7 @@ public class Player
     public CharacterBody3D CharacterBody;
     public ShapeCast3D FloorCast;
     public RayCast3D SlopeCast;
+    public RayCast3D SlopeEdgeCast;
     public RayCast3D FootCast;
     public Camera3D Camera;
 }

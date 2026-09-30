@@ -67,12 +67,17 @@ internal static class Interpreter
             return !falling && Mathf.Abs(stepHeight) > rise && Mathf.Abs(stepHeight) > 1e-02f;
         }
 
+        bool IsSlope(float normalY)
+        {
+            return 90f - float.RadiansToDegrees(Mathf.Asin(normalY)) >= GameSettings.MaxSlopeAngle;
+        }
+
         SharedVariables.PhysicVariables vars = SharedVariables.PhysicsVars;
         player.FloorCast.ForceShapecastUpdate();
         bool collision = player.FloorCast.IsColliding();
-        
+
         SharedVariables.PhysicsVars.OnSlope = !collision;
-        
+
         if (!collision || player.CharacterBody.Velocity.Y > 0f)
         {
             SharedVariables.PhysicsVars.SlopeNormal = SharedVariables.PhysicsVars.SlopeNormal.Lerp(Vector3.Zero, GameManager.Delta);
@@ -91,23 +96,50 @@ internal static class Interpreter
 
         if (IsStep(offset, slope))
         {
-            // Step
+            // Step (Step logic is outside of this)
             GD.Print("Stepped");
             player.CharacterBody.ResetPhysicsInterpolation();
             vars.StepOffset += offset;
         }
 
-        if (90f - float.RadiansToDegrees(Mathf.Asin(normal.Y)) < GameSettings.MaxSlopeAngle && !forceSlope)
+        // player.FootCast.ForceRaycastUpdate();
+
+        // if (!IsSlope(player.FootCast.GetCollisionNormal().Y) && !forceSlope)
+        // {
+        //     player.SlopeEdgeCast.Position = player.SlopeCast.Position * new Vector3(GameSettings.SlopeStopFraction, 1, GameSettings.SlopeStopFraction);
+        //     player.SlopeEdgeCast.ForceRaycastUpdate();
+        //
+        //     if (!IsSlope(player.SlopeEdgeCast.GetCollisionNormal().Y))
+        //         SharedVariables.PhysicsVars.LimitNormal = Vector3.Zero;
+        //
+        //     SharedVariables.PhysicsVars.OnSlope = false;
+        //     return true;
+        // }
+        
+        // player.SlopeEdgeCast.Position = player.SlopeCast.Position * new Vector3(GameSettings.SlopeStopFraction, 1, GameSettings.SlopeStopFraction);
+        SharedVariables.PhysicsVars.LimitNormal = new Vector3(normal.X, 0, normal.Z).Normalized();
+        
+        player.FootCast.ForceRaycastUpdate();
+        bool footSlope = IsSlope(player.FootCast.GetCollisionNormal().Y);
+
+        if (!footSlope)
         {
-            SharedVariables.PhysicsVars.LimitNormal = Vector3.Zero;
+            GD.Print("not slope");
+            player.SlopeEdgeCast.Position = player.SlopeCast.Position * new Vector3(GameSettings.SlopeStopFraction, 1, GameSettings.SlopeStopFraction);
+            player.SlopeEdgeCast.ForceRaycastUpdate();
+
+            if (!IsSlope(player.SlopeEdgeCast.GetCollisionNormal().Y))
+            {
+                GD.Print("aaa");
+                SharedVariables.PhysicsVars.LimitNormal = Vector3.Zero;
+            }
+            
+            SharedVariables.PhysicsVars.OnSlope = false;
             return true;
         }
 
-        player.FootCast.ForceRaycastUpdate();
-
         SharedVariables.PhysicsVars.OnSlope = true;
         SharedVariables.PhysicsVars.SlopeNormal = normal.Cross(new Vector3(-normal.Z, 0, normal.X).Normalized());
-        SharedVariables.PhysicsVars.LimitNormal = new Vector3(normal.X, 0, normal.Z).Normalized();
 
         return true;
     }
@@ -180,7 +212,7 @@ internal static class Interpreter
     {
         SharedVariables.JumpVariables jumpVars = SharedVariables.JumpVars;
         HandleJumpVars();
-        
+
         bool nearFloor = jumpVars.AirTiming > 0f || floored;
         bool jumpInput = jump >= (PlayerSettings.PlayerInput.HoldJump ? 1 : 2);
 
@@ -266,7 +298,7 @@ internal static class Interpreter
         Vector3 movementDir = new Vector3(input.X, 0, -input.Y) * forward;
         Vector3 velocity = bodyVelocity * new Vector3(1, 1, 1);
 
-        movementDir = ClampToSlope(movementDir, 1f, floored);
+        movementDir = ClampToSlope(movementDir, biDirectional: floored);
 
         Vector3 inputVelocity = velocity + movementDir * (floored ? GameSettings.Control * (velocity.Length() * 0.2f + 1) : GameSettings.Control);
 
@@ -281,8 +313,6 @@ internal static class Interpreter
 
         if (vars.SlopeNormal == Vector3.Zero)
             return velocity;
-
-        GD.Print(vars.OnSlope);
 
         if (vars.OnSlope)
             velocity += (vars.SlopeNormal + Vector3.Down * velocity.Length()) * GameManager.Delta * (75f + velocity.Length()) * Mathf.Abs(vars.SlopeNormal.Y);
